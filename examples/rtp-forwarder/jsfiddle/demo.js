@@ -1,7 +1,7 @@
 
 /* eslint-env browser */
-var host = "http://localhost"
-//var host = "https://testingwebrtc.ml"
+//var host = "http://localhost"
+var host = "https://testingwebrtc.ddns.net"
 
 let pc = new RTCPeerConnection({
   iceServers: [
@@ -11,7 +11,7 @@ let pc = new RTCPeerConnection({
   ]
 })
 var log = msg => {
-  document.getElementById('logs').innerHTML += msg + '<br>'
+  //document.getElementById('logs').innerHTML += msg + '<br>'
 }
 
 navigator.mediaDevices.getUserMedia({ video: true, audio: true })
@@ -20,25 +20,31 @@ navigator.mediaDevices.getUserMedia({ video: true, audio: true })
   pc.createOffer().then(d => pc.setLocalDescription(d)).catch(log)
 }).catch(log)
 
+function connectStream(ip){
+  //pc.addStream(document.getElementById('video1').srcObject = "http://192.168.0.233:4747/video" )
+}
+
 
 var  localSesion = 'Test'
 pc.oniceconnectionstatechange = e => log(pc.iceConnectionState)
 pc.onicecandidate = event => {
   if (event.candidate === null) {
-    localSesion = btoa(JSON.stringify(pc.localDescription))
-    document.getElementById('localSessionDescription').value = localSesion
+    localSesion = btoa(JSON.stringify(pc.localDescription));
 
-    getToken("user=mauro&id_camera=1&token="+localSesion);
+    var data = "user=mauro&id_camera=1&token="+localSesion;
+    console.log(data);
+    getToken(data);
   }
 }
 
+var remoteSesion = ''
 function getToken(data){
   var xhr = new XMLHttpRequest();
-
+  xhr.withCredentials = true;
   xhr.onload = function () {
   console.log(this.readyState);
     if (this.readyState === 4) {
-      document.getElementById('remoteSessionDescription').value = this.responseText
+      remoteSesion = this.responseText
       setTimeout(window.startSession(), 3000);
       console.log(this.responseText);
     }
@@ -52,18 +58,13 @@ function getToken(data){
   xhr.open("POST", host+"/sendtokenstreamer");
   xhr.setRequestHeader("cache-control", "no-cache");
   xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-
+  xhr.setRequestHeader('token', 'eltoken');
   xhr.send(data);
 }
 
 window.startSession = () => {
-  let sd = document.getElementById('remoteSessionDescription').value
-  if (sd === '') {
-    return alert('Session Description must not be empty NOW')
-  }
-
   try {
-    pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(atob(sd))))
+    pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(atob(remoteSesion))))
   } catch (e) {
     alert(e)
   }

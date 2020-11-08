@@ -47,3 +47,10 @@
     sudo kill -9 PROCESSID
 ```
 
+
+
+**Note:** For deploy in local host you need change:
+
+- in "webrtcProject/examples/rtp-forwarder/jsfiddle/demo.js" comment line 22 and uncomment line 21
+- in "webrtcProject/examples/example.go" comment line 4 and uncomment line 3
+

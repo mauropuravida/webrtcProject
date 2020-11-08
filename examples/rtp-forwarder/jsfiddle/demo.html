@@ -1,19 +1,8 @@
-Browser base64 Session Description<br />
-<textarea id="localSessionDescription" readonly="true"></textarea> <br />
+<script>
 
-Golang base64 Session Description<br />
-<textarea id="remoteSessionDescription"></textarea> <br/>
-<button onclick="window.startSession()"> Start Session </button><br />
+</script>
 
-<br />
-
-Video<br />
-<video id="video1" width="160" height="120" autoplay muted></video> <br />
-
-Logs<br />
-<div id="logs"></div>
-
-<h2>HTML Table</h2>
+<h2>CAMARAS</h2>
 
 <table>
   <tr>
@@ -23,9 +12,14 @@ Logs<br />
     <th></th>
   </tr>
   <tr>
-    <td>Alfreds Futterkiste</td>
-    <td>Maria Anders</td>
-    <td><video id="video1" width="160" height="120" autoplay muted></video></td>
-    <td></td>
+    <td><input type="text" name="ip" /></td>
+    <td><input type="text" name="description" /></td>
+    <td><video id="video1" width="160" height="120" src="https://192.168.0.233:4747/video" autoplay muted>
+    	</video>
+    </td>
+    <td>
+    	<input class='mybutton' type='button' value='Conectar'/>
+    	<input class='mybutton' type='button' value='Eliminar'/>
+    </td>
   </tr>
 </table>

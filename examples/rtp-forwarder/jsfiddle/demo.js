@@ -1,7 +1,7 @@
 
 /* eslint-env browser */
-//var host = "http://localhost"
-var host = "https://testingwebrtc.ddns.net"
+var host = "http://localhost"
+//var host = "https://testingwebrtc.ddns.net"
 
 let pc = new RTCPeerConnection({
   iceServers: [
@@ -10,20 +10,36 @@ let pc = new RTCPeerConnection({
   }
   ]
 })
-var log = msg => {
-  //document.getElementById('logs').innerHTML += msg + '<br>'
-}
 
-navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+/*navigator.mediaDevices.getUserMedia({ video: true, audio: true })
 .then(stream => {
   pc.addStream(document.getElementById('video1').srcObject = stream)
   pc.createOffer().then(d => pc.setLocalDescription(d)).catch(log)
-}).catch(log)
+}).catch(log)*/
+//var sobject = document.getElementById('streamtest').srcObject
+//var stream = new MediaStream()
+function connectStream(){
 
-function connectStream(ip){
-  //pc.addStream(document.getElementById('video1').srcObject = "http://192.168.0.233:4747/video" )
+  myImg = new Image()
+  myImg.src = document.getElementById('url').value
+  myImg.crossOrigin = "Anonymous"
+
+  var canvas = document.getElementById("myCanvas");
+  var context = canvas.getContext("2d");
+  
+
+  (function loop() {
+    if (!this.paused && !this.ended) {
+      context.drawImage(myImg, 0, 0, canvas.width, canvas.height);
+      setTimeout(loop, 1000 / 30); // drawing at 30fps
+    }
+  })();
+
+  var stream = canvas.captureStream(30)
+  pc.addStream(stream)
+  pc.createOffer().then(d => pc.setLocalDescription(d)).catch(log)
+  
 }
-
 
 var  localSesion = 'Test'
 pc.oniceconnectionstatechange = e => log(pc.iceConnectionState)

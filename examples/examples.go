@@ -109,6 +109,16 @@ func serve(addr string) error {
 	})
 
 	//Check if exists stream from user and id_camera
+	http.HandleFunc("/reset", func(w http.ResponseWriter, req *http.Request) {
+		token_stream = ""
+		token_connect = ""
+
+		fmt.Fprintln(w, "reset")
+		return
+	})
+
+
+	//Check if exists stream from user and id_camera
 	http.HandleFunc("/checkstream", func(w http.ResponseWriter, req *http.Request) {
 		// Parses the request body
 		req.ParseForm()

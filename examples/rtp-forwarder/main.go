@@ -198,7 +198,7 @@ func main() {
 	fmt.Println(signal.Encode(*peerConnection.LocalDescription()))
 
 
-    endpoint := "https://testingwebrtc.ddns.net/sendtokenconnect"
+    endpoint := "http://127.0.0.1/sendtokenconnect"
     data := url.Values{}
     data.Set("token", signal.Encode(*peerConnection.LocalDescription()))
 

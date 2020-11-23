@@ -15,6 +15,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"os"
 )
 
 type udpConn struct {
@@ -25,7 +26,12 @@ type udpConn struct {
 //Only work in linux
 func createSdp(addr string, videoPort string){
 	data := []byte("v=0\no=- 0 0 IN IP4 "+addr+"\ns=WebRTC "+addr+":"+videoPort+"\nc=IN IP4 "+addr+"\nt=0 0\nm=video "+videoPort+" RTP/AVP 96\na=rtpmap:96 VP8/90000")
-    ioutil.WriteFile("/tmp/"+addr+"_"+videoPort+".sdp", data, 0644)
+    prefix := addr+"_"+videoPort+"-*.sdp"
+    tmpFile, err := ioutil.TempFile(os.TempDir(), prefix)
+    if err != nil {
+        fmt.Println("Cannot create temporary file", err)
+    }
+    tmpFile.Write(data)
 }
 
 func main() {

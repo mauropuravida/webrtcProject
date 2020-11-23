@@ -23,6 +23,10 @@ type udpConn struct {
 	port int
 }
 
+var(
+	host = ""
+	)
+
 //Only work in linux
 func createSdp(addr string, videoPort string){
 	data := []byte("v=0\no=- 0 0 IN IP4 "+addr+"\ns=WebRTC "+addr+":"+videoPort+"\nc=IN IP4 "+addr+"\nt=0 0\nm=video "+videoPort+" RTP/AVP 96\na=rtpmap:96 VP8/90000")
@@ -37,7 +41,10 @@ func createSdp(addr string, videoPort string){
 func main() {
 	addr := flag.String("address", "127.0.0.200", "Address to host the HTTP server on.")
 	portt := flag.Int("port", 4000, "Address to host the HTTP server on.")
+	hostt := flag.String("host", "http://localhost", "")
 	flag.Parse()
+
+	host = *hostt
 
 	fmt.Printf("Listening address %s \n", *addr)
 
@@ -203,7 +210,7 @@ func main() {
 	fmt.Println(signal.Encode(*peerConnection.LocalDescription()))
 
 
-    endpoint := "http://127.0.0.1/sendtokenconnect"
+    endpoint := host+"/sendtokenconnect"
     data := url.Values{}
     data.Set("token", signal.Encode(*peerConnection.LocalDescription()))
 

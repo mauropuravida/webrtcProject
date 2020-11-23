@@ -18,31 +18,96 @@ let pc = new RTCPeerConnection({
 }).catch(log)*/
 //var sobject = document.getElementById('streamtest').srcObject
 //var stream = new MediaStream()
-function connectStream(){
 
-  myImg = new Image()
+let rotateAngle = 0;
+let xr;
+let yr;
+function rotateStream(){
+  rotateAngle = rotateAngle + 90;
+
+  switch(rotateAngle) {
+  case 90:
+    yr = yr * -1
+    break;
+  case 180:
+    xr = xr * -1
+    break;
+  case 270:
+    yr = yr * -1
+    break;
+  case 360:
+    xr = xr * -1
+    rotateAngle = 0
+    break;
+  default:
+    // code block
+  }
+}
+
+var transform = false;
+function changeColorStream(){
+  if(transform)
+    transform = false
+  else
+    transform = true
+}
+
+function handlerImage(element, myImg){
+    var context = element.getContext("2d");
+
+    context.setTransform(1, 0, 0, 1, 0, 0);
+    context.clearRect(0,0,element.width, element.height);
+    context.setTransform(1, 0, 0, 1, element.xr, element.yr);      
+    context.rotate(parseInt(rotateAngle) * Math.PI / 180);
+    context.drawImage(myImg, 0, 0, element.width, element.height);
+
+    //transform grey color
+    if (transform){
+      var imgData = context.getImageData(0, 0, element.width, element.height);
+      var px = imgData.data;
+      for (i = 0; i < imgData.data.length; i += 4) {
+        var grey = px[i] * .3 + px[i+1] * .59 + px[i+2] * .11;
+        px[i] = px[i+1] = px[i+2] = grey;
+      }
+
+      context.putImageData(imgData, 0, 0);
+    }
+}
+
+
+async function connectStream(){
+  var myImg = new Image()
   myImg.src = document.getElementById('url').value
   myImg.crossOrigin = "Anonymous"
 
-  var canvas = document.getElementById("myCanvas");
-  var context = canvas.getContext("2d");
-  
+  var canvasClient = document.getElementById("myCanvas");
+
+  var canvasStream = document.createElement("CANVAS");
+  canvasStream.width = 480
+  canvasStream.height = 360
+
+  xr = canvasClient.width;
+  yr = canvasClient.height;
 
   (function loop() {
     if (!this.paused && !this.ended) {
-      context.drawImage(myImg, 0, 0, canvas.width, canvas.height);
-      setTimeout(loop, 1000 / 30); // drawing at 30fps
-    }
+        //draw in canvas client
+        handlerImage(canvasClient, myImg);
+        //draw in canvas for stream best resolution
+        handlerImage(canvasStream, myImg);
+      }
+
+      setTimeout(loop, 1000 / 60); // drawing at 60fps
   })();
 
-  var stream = canvas.captureStream(30)
+  var stream = canvasStream.captureStream(60)
   pc.addStream(stream)
-  pc.createOffer().then(d => pc.setLocalDescription(d)).catch(log)
+  pc.createOffer().then(d => pc.setLocalDescription(d)).catch("error")
   
 }
 
 var  localSesion = 'Test'
-pc.oniceconnectionstatechange = e => log(pc.iceConnectionState)
+pc.oniceconnectionstatechange = e => console.log(pc.iceConnectionState)
 pc.onicecandidate = event => {
   if (event.candidate === null) {
     localSesion = btoa(JSON.stringify(pc.localDescription));

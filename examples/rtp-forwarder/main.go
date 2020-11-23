@@ -23,9 +23,9 @@ type udpConn struct {
 }
 
 //Only work in linux
-func createSdp(addr string, audioPort string, videoPort string){
-	data := []byte("v=0\no=- 0 0 IN IP4 "+addr+"\ns=WebRTC "+addr+":"+audioPort+"\nc=IN IP4 "+addr+"\nt=0 0\nm=audio "+audioPort+" RTP/AVP 111\na=rtpmap:111 OPUS/48000/2\nm=video "+videoPort+" RTP/AVP 96\na=rtpmap:96 VP8/90000")
-    ioutil.WriteFile("/tmp/"+addr+"_"+audioPort+".sdp", data, 0644)
+func createSdp(addr string, videoPort string){
+	data := []byte("v=0\no=- 0 0 IN IP4 "+addr+"\ns=WebRTC "+addr+":"+videoPort+"\nc=IN IP4 "+addr+"\nt=0 0\nm=video "+videoPort+" RTP/AVP 96\na=rtpmap:96 VP8/90000")
+    ioutil.WriteFile("/tmp/"+addr+"_"+videoPort+".sdp", data, 0644)
 }
 
 func main() {
@@ -40,7 +40,7 @@ func main() {
 		return
 	}
 
-	createSdp(*addr, strconv.Itoa(*portt), strconv.Itoa(*portt+2))
+	createSdp(*addr, strconv.Itoa(*portt))
 	// Create context
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -87,8 +87,7 @@ func main() {
 
 	// Prepare udp conns
 	udpConns := map[string]*udpConn{
-		"audio": {port: *portt},
-		"video": {port: *portt+2},
+		"video": {port: *portt},
 	}
 	for _, c := range udpConns {
 		// Create remote addr

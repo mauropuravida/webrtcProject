@@ -10,13 +10,15 @@
   <tr>
     <td><input type="text" name="url" id="url" value="http://192.168.0.233:4747/video" /></td>
     <td><input type="text" name="description" id="description"/></td>
-    <td>
+    <td width="180" height="180">
       <!--<video id="stream" width="160" height="120" class="video-stream" x-webkit-airplay="allow" src="http://192.168.0.233:4747/video">
     	</video> 
       <img width="160" height="120" id="stream3" > -->
       <canvas width="160" height="120" id="myCanvas" autoplay></canvas>
     </td>
     <td>
+		<input class='mybutton' type='button' value='Color' onclick="changeColorStream()"/>
+    	<input class='mybutton' type='button' value='Rotar' onclick="rotateStream()"/>
     	<input class='mybutton' type='button' value='Conectar' onclick="connectStream()" />
     	<input class='mybutton' type='button' value='Eliminar'/>
     </td>

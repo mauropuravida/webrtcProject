@@ -145,14 +145,9 @@ function connectStream(id){
   function handlerImg(element, xr, yr){
     var context = element.getContext("2d");
 
-    context.clearRect(0,0,element.width, element.height);
-    //context.setTransform(1, 0, 0, 1, xr, yr);      
+    context.clearRect(0,0,element.width, element.height);  
     context.rotate(angle);
     context.drawImage(myImg, 0, 0, xr, yr);
-
-    /*context.setTransform(1, 0, 0, 1, element.width, element.height);
-    context.rotate(parseInt(rotateAngle) * Math.PI / 180);
-    context.drawImage(img, 0, 0, img.width, img.height, 0, 0, element.width, element.height );*/
 
     //transform grey color
     if (transform){
@@ -172,15 +167,6 @@ function connectStream(id){
 
   (function loop() {
     if (!this.paused && !this.ended && (!pcMap.has(id) || pcMap.get(id).connectionState != 'closed')) {
-
-      /*var context = canvasClient.getContext("2d");
-      //context.setTransform(1, 0, 0, 1, 0, 0);
-      context.clearRect(0,0,canvasClient.width, canvasClient.height);
-      //context.setTransform(1, 0, 0, 1, xr, yr);      
-      context.rotate(angle);
-      context.drawImage(myImg, 0, 0, xr, yr);*/
-
-
       //draw in canvas client
       handlerImg(canvasClient, xrC, yrC);
       //draw in canvas for stream best resolution
@@ -277,7 +263,6 @@ function stopStream(id){
     xhrMap.get(id).abort()
     xhrMap.delete(id)
   }
-
 }
 
 function listenPc(id){
@@ -294,7 +279,6 @@ function listenPc(id){
   }
 }
 
-//var remoteSesion = ''
 function getToken(data, id){
   var xhr = new XMLHttpRequest();
 
@@ -310,7 +294,7 @@ function getToken(data, id){
   };
   xhr.ontimeout = function(e){
       console.log("time lost");
-      //getToken("");
+      getToken("");
   }
   // await one minute for response 
   xhr.timeout = 60000;

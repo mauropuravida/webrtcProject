@@ -16,6 +16,11 @@ import (
 	"time"
 )
 
+const (
+    PUBLIC_KEY = "/etc/letsencrypt/live/testingwebrtc.ddns.net/fullchain.pem"
+    PRIV_KEY = "/etc/letsencrypt/live/testingwebrtc.ddns.net/privkey.pem"
+)
+
 // Examples represents the examples loaded from examples.json.
 type Examples []*Example
 
@@ -24,7 +29,6 @@ var (
 	errParseExamples = errors.New("failed to parse examples")
 	token_stream = ""
 	token_connect = ""
-	sync time.Time
 )
 
 // Example represents an example loaded from examples.json.
@@ -35,6 +39,18 @@ type Example struct {
 	Type        string `json:"type"`
 	IsJS        bool
 	IsWASM      bool
+}
+
+//redirect request poty 80 to port 443
+func redirect(w http.ResponseWriter, req *http.Request) {
+ // remove/add not default ports from req.Host
+    target := "https://" + req.Host + req.URL.Path
+    if len(req.URL.RawQuery) > 0 {
+        target += "?" + req.URL.RawQuery
+    }
+    log.Printf("redirect to: %s", target)
+    http.Redirect(w, req, target,
+        http.StatusTemporaryRedirect)
 }
 
 func main() {
@@ -55,8 +71,6 @@ func serve(addr string) error {
 		return err
 	}
 
-
-
 	// Load the templates
 	homeTemplate := template.Must(template.ParseFiles("index.html"))
 
@@ -72,8 +86,6 @@ func serve(addr string) error {
 			token_stream = token
 		}
 
-		//fmt.Printf(token_stream)
-
 		// await for token_connect
 		endTime := time.Now().Add(time.Second * 61)
 		for time.Now().Before(endTime) {
@@ -83,10 +95,8 @@ func serve(addr string) error {
 				fmt.Fprintln(w, tokenResponse)
 				return
 			}
-			//fmt.Println("Esperando")
 		}
 
-		//fmt.Println("SALIENDO")
 		fmt.Fprintln(w, "")
 		return
 	})
@@ -96,7 +106,6 @@ func serve(addr string) error {
 		// Parses the request body
 		req.ParseForm()
 		token_connect = req.Form.Get("token")
-		//fmt.Printf(token_stream)
 
 		token := token_stream
 		if token != ""{
@@ -108,7 +117,7 @@ func serve(addr string) error {
 		return
 	})
 
-	//Check if exists stream from user and id_camera
+	//Delete vars only for *testing*
 	http.HandleFunc("/reset", func(w http.ResponseWriter, req *http.Request) {
 		token_stream = ""
 		token_connect = ""
@@ -132,32 +141,6 @@ func serve(addr string) error {
 
 		fmt.Fprintln(w, "token not found")
 		return
-	})
-
-	//Syncronize clients, streamer check every minute if the timing is! = 0. Yes! = 0 will require the connection token in sync + 120
-	http.HandleFunc("/checksyncronize", func(w http.ResponseWriter, req *http.Request) {
-		// Parses the request body
-		//synchronization for user and consumer before connection connection
-
-		//send time for request sync
-		fmt.Fprintln(w,sync.Format("03:04:05")+" "+time.Now().Format("03:04:05"))
-		return
-
-	})
-
-	//Get token from consumer
-	http.HandleFunc("/gettokenconsumer", func(w http.ResponseWriter, req *http.Request) {
-		// Parses the request body
-		//synchronization for user and consumer before connection connection
-
-		//send time for request sync
-		sync = time.Time{}
-		token_stream = ""
-		token := token_connect
-		token_connect = ""
-		fmt.Fprintln(w,token)
-		return
-
 	})
 
 	//Add camera
@@ -212,8 +195,6 @@ func serve(addr string) error {
 
 		req.ParseForm()		// Parses the request body
 		token := req.Form.Get("token") // x will be "" if parameter is not set
-
-//		token := "eyJ0eXBlIjoib2ZmZXIiLCJzZHAiOiJ2PTBcclxubz0tIDc5MTkzNjY5MzczNDQxNjk3ODUgMiBJTiBJUDQgMTI3LjAuMC4xXHJcbnM9LVxyXG50PTAgMFxyXG5hPWdyb3VwOkJVTkRMRSAwIDFcclxuYT1tc2lkLXNlbWFudGljOiBXTVMgSUV3eExWcFBiVHEwUENvdGVIaG1WaUxkUTZpUU1OOFNQVHJkXHJcbm09YXVkaW8gNTczOTYgVURQL1RMUy9SVFAvU0FWUEYgMTExIDEwMyAxMDQgOSAwIDggMTA2IDEwNSAxMyAxMTAgMTEyIDExMyAxMjZcclxuYz1JTiBJUDQgMTUyLjE3MC4xLjE2M1xyXG5hPXJ0Y3A6OSBJTiBJUDQgMC4wLjAuMFxyXG5hPWNhbmRpZGF0ZTo0MjUyODc2MjU2IDEgdWRwIDIxMjIyNjAyMjMgMTkyLjE2OC4wLjE5NCA1NzM5NiB0eXAgaG9zdCBnZW5lcmF0aW9uIDAgbmV0d29yay1pZCAxIG5ldHdvcmstY29zdCAxMFxyXG5hPWNhbmRpZGF0ZTozMDE5Nzg0NDY0IDEgdGNwIDE1MTgyODA0NDcgMTkyLjE2OC4wLjE5NCA5IHR5cCBob3N0IHRjcHR5cGUgYWN0aXZlIGdlbmVyYXRpb24gMCBuZXR3b3JrLWlkIDEgbmV0d29yay1jb3N0IDEwXHJcbmE9Y2FuZGlkYXRlOjIwODM4OTYxNDggMSB1ZHAgMTY4NjA1MjYwNyAxNTIuMTcwLjEuMTYzIDU3Mzk2IHR5cCBzcmZseCByYWRkciAxOTIuMTY4LjAuMTk0IHJwb3J0IDU3Mzk2IGdlbmVyYXRpb24gMCBuZXR3b3JrLWlkIDEgbmV0d29yay1jb3N0IDEwXHJcbmE9aWNlLXVmcmFnOnYvb05cclxuYT1pY2UtcHdkOnNhNSsvSGd5WFFyaUpsR29ocmRDU09iV1xyXG5hPWljZS1vcHRpb25zOnRyaWNrbGVcclxuYT1maW5nZXJwcmludDpzaGEtMjU2IDgyOjcwOjlEOkI2OkI5OkIwOkM0OkFFOjIxOjg5OjY1OjFDOjM5OjM5OkE0OkJGOjZCOkJBOjMyOjhFOkU0OjY3OjgxOjM1OkQ5OjYzOkQyOkQ4OkQ0OjEwOjYyOkNCXHJcbmE9c2V0dXA6YWN0cGFzc1xyXG5hPW1pZDowXHJcbmE9ZXh0bWFwOjEgdXJuOmlldGY6cGFyYW1zOnJ0cC1oZHJleHQ6c3NyYy1hdWRpby1sZXZlbFxyXG5hPWV4dG1hcDoyIGh0dHA6Ly93d3cud2VicnRjLm9yZy9leHBlcmltZW50cy9ydHAtaGRyZXh0L2Ficy1zZW5kLXRpbWVcclxuYT1leHRtYXA6MyBodHRwOi8vd3d3LmlldGYub3JnL2lkL2RyYWZ0LWhvbG1lci1ybWNhdC10cmFuc3BvcnQtd2lkZS1jYy1leHRlbnNpb25zLTAxXHJcbmE9ZXh0bWFwOjQgdXJuOmlldGY6cGFyYW1zOnJ0cC1oZHJleHQ6c2RlczptaWRcclxuYT1leHRtYXA6NSB1cm46aWV0ZjpwYXJhbXM6cnRwLWhkcmV4dDpzZGVzOnJ0cC1zdHJlYW0taWRcclxuYT1leHRtYXA6NiB1cm46aWV0ZjpwYXJhbXM6cnRwLWhkcmV4dDpzZGVzOnJlcGFpcmVkLXJ0cC1zdHJlYW0taWRcclxuYT1zZW5kcmVjdlxyXG5hPW1zaWQ6SUV3eExWcFBiVHEwUENvdGVIaG1WaUxkUTZpUU1OOFNQVHJkIDIzZmVlMTQ2LWEyM2QtNDQ3NC05OWYwLTI2MjQxOTFmNzBmYVxyXG5hPXJ0Y3AtbXV4XHJcbmE9cnRwbWFwOjExMSBvcHVzLzQ4MDAwLzJcclxuYT1ydGNwLWZiOjExMSB0cmFuc3BvcnQtY2NcclxuYT1mbXRwOjExMSBtaW5wdGltZT0xMDt1c2VpbmJhbmRmZWM9MVxyXG5hPXJ0cG1hcDoxMDMgSVNBQy8xNjAwMFxyXG5hPXJ0cG1hcDoxMDQgSVNBQy8zMjAwMFxyXG5hPXJ0cG1hcDo5IEc3MjIvODAwMFxyXG5hPXJ0cG1hcDowIFBDTVUvODAwMFxyXG5hPXJ0cG1hcDo4IFBDTUEvODAwMFxyXG5hPXJ0cG1hcDoxMDYgQ04vMzIwMDBcclxuYT1ydHBtYXA6MTA1IENOLzE2MDAwXHJcbmE9cnRwbWFwOjEzIENOLzgwMDBcclxuYT1ydHBtYXA6MTEwIHRlbGVwaG9uZS1ldmVudC80ODAwMFxyXG5hPXJ0cG1hcDoxMTIgdGVsZXBob25lLWV2ZW50LzMyMDAwXHJcbmE9cnRwbWFwOjExMyB0ZWxlcGhvbmUtZXZlbnQvMTYwMDBcclxuYT1ydHBtYXA6MTI2IHRlbGVwaG9uZS1ldmVudC84MDAwXHJcbmE9c3NyYzoxNzQ3NzgyNjk0IGNuYW1lOnlOSjAxdHBBUDFMdkY3R09cclxuYT1zc3JjOjE3NDc3ODI2OTQgbXNpZDpJRXd4TFZwUGJUcTBQQ290ZUhobVZpTGRRNmlRTU44U1BUcmQgMjNmZWUxNDYtYTIzZC00NDc0LTk5ZjAtMjYyNDE5MWY3MGZhXHJcbmE9c3NyYzoxNzQ3NzgyNjk0IG1zbGFiZWw6SUV3eExWcFBiVHEwUENvdGVIaG1WaUxkUTZpUU1OOFNQVHJkXHJcbmE9c3NyYzoxNzQ3NzgyNjk0IGxhYmVsOjIzZmVlMTQ2LWEyM2QtNDQ3NC05OWYwLTI2MjQxOTFmNzBmYVxyXG5tPXZpZGVvIDQ4NTc2IFVEUC9UTFMvUlRQL1NBVlBGIDk2IDk3IDk4IDk5IDEwMCAxMDEgMTAyIDEyMSAxMjcgMTIwIDEyNSAxMDcgMTA4IDEwOSAxMjQgMTE5IDEyM1xyXG5jPUlOIElQNCAxNTIuMTcwLjEuMTYzXHJcbmE9cnRjcDo5IElOIElQNCAwLjAuMC4wXHJcbmE9Y2FuZGlkYXRlOjQyNTI4NzYyNTYgMSB1ZHAgMjEyMjI2MDIyMyAxOTIuMTY4LjAuMTk0IDQ4NTc2IHR5cCBob3N0IGdlbmVyYXRpb24gMCBuZXR3b3JrLWlkIDEgbmV0d29yay1jb3N0IDEwXHJcbmE9Y2FuZGlkYXRlOjMwMTk3ODQ0NjQgMSB0Y3AgMTUxODI4MDQ0NyAxOTIuMTY4LjAuMTk0IDkgdHlwIGhvc3QgdGNwdHlwZSBhY3RpdmUgZ2VuZXJhdGlvbiAwIG5ldHdvcmstaWQgMSBuZXR3b3JrLWNvc3QgMTBcclxuYT1jYW5kaWRhdGU6MjA4Mzg5NjE0OCAxIHVkcCAxNjg2MDUyNjA3IDE1Mi4xNzAuMS4xNjMgNDg1NzYgdHlwIHNyZmx4IHJhZGRyIDE5Mi4xNjguMC4xOTQgcnBvcnQgNDg1NzYgZ2VuZXJhdGlvbiAwIG5ldHdvcmstaWQgMSBuZXR3b3JrLWNvc3QgMTBcclxuYT1pY2UtdWZyYWc6di9vTlxyXG5hPWljZS1wd2Q6c2E1Ky9IZ3lYUXJpSmxHb2hyZENTT2JXXHJcbmE9aWNlLW9wdGlvbnM6dHJpY2tsZVxyXG5hPWZpbmdlcnByaW50OnNoYS0yNTYgODI6NzA6OUQ6QjY6Qjk6QjA6QzQ6QUU6MjE6ODk6NjU6MUM6Mzk6Mzk6QTQ6QkY6NkI6QkE6MzI6OEU6RTQ6Njc6ODE6MzU6RDk6NjM6RDI6RDg6RDQ6MTA6NjI6Q0JcclxuYT1zZXR1cDphY3RwYXNzXHJcbmE9bWlkOjFcclxuYT1leHRtYXA6MTQgdXJuOmlldGY6cGFyYW1zOnJ0cC1oZHJleHQ6dG9mZnNldFxyXG5hPWV4dG1hcDoyIGh0dHA6Ly93d3cud2VicnRjLm9yZy9leHBlcmltZW50cy9ydHAtaGRyZXh0L2Ficy1zZW5kLXRpbWVcclxuYT1leHRtYXA6MTMgdXJuOjNncHA6dmlkZW8tb3JpZW50YXRpb25cclxuYT1leHRtYXA6MyBodHRwOi8vd3d3LmlldGYub3JnL2lkL2RyYWZ0LWhvbG1lci1ybWNhdC10cmFuc3BvcnQtd2lkZS1jYy1leHRlbnNpb25zLTAxXHJcbmE9ZXh0bWFwOjEyIGh0dHA6Ly93d3cud2VicnRjLm9yZy9leHBlcmltZW50cy9ydHAtaGRyZXh0L3BsYXlvdXQtZGVsYXlcclxuYT1leHRtYXA6MTEgaHR0cDovL3d3dy53ZWJydGMub3JnL2V4cGVyaW1lbnRzL3J0cC1oZHJleHQvdmlkZW8tY29udGVudC10eXBlXHJcbmE9ZXh0bWFwOjcgaHR0cDovL3d3dy53ZWJydGMub3JnL2V4cGVyaW1lbnRzL3J0cC1oZHJleHQvdmlkZW8tdGltaW5nXHJcbmE9ZXh0bWFwOjggaHR0cDovL3d3dy53ZWJydGMub3JnL2V4cGVyaW1lbnRzL3J0cC1oZHJleHQvY29sb3Itc3BhY2VcclxuYT1leHRtYXA6NCB1cm46aWV0ZjpwYXJhbXM6cnRwLWhkcmV4dDpzZGVzOm1pZFxyXG5hPWV4dG1hcDo1IHVybjppZXRmOnBhcmFtczpydHAtaGRyZXh0OnNkZXM6cnRwLXN0cmVhbS1pZFxyXG5hPWV4dG1hcDo2IHVybjppZXRmOnBhcmFtczpydHAtaGRyZXh0OnNkZXM6cmVwYWlyZWQtcnRwLXN0cmVhbS1pZFxyXG5hPXNlbmRyZWN2XHJcbmE9bXNpZDpJRXd4TFZwUGJUcTBQQ290ZUhobVZpTGRRNmlRTU44U1BUcmQgMzQ4M2E5NmEtZTAzNy00ZGU1LWFkMzQtOWYyYWMzNWQ0Y2E1XHJcbmE9cnRjcC1tdXhcclxuYT1ydGNwLXJzaXplXHJcbmE9cnRwbWFwOjk2IFZQOC85MDAwMFxyXG5hPXJ0Y3AtZmI6OTYgZ29vZy1yZW1iXHJcbmE9cnRjcC1mYjo5NiB0cmFuc3BvcnQtY2NcclxuYT1ydGNwLWZiOjk2IGNjbSBmaXJcclxuYT1ydGNwLWZiOjk2IG5hY2tcclxuYT1ydGNwLWZiOjk2IG5hY2sgcGxpXHJcbmE9cnRwbWFwOjk3IHJ0eC85MDAwMFxyXG5hPWZtdHA6OTcgYXB0PTk2XHJcbmE9cnRwbWFwOjk4IFZQOS85MDAwMFxyXG5hPXJ0Y3AtZmI6OTggZ29vZy1yZW1iXHJcbmE9cnRjcC1mYjo5OCB0cmFuc3BvcnQtY2NcclxuYT1ydGNwLWZiOjk4IGNjbSBmaXJcclxuYT1ydGNwLWZiOjk4IG5hY2tcclxuYT1ydGNwLWZiOjk4IG5hY2sgcGxpXHJcbmE9Zm10cDo5OCBwcm9maWxlLWlkPTBcclxuYT1ydHBtYXA6OTkgcnR4LzkwMDAwXHJcbmE9Zm10cDo5OSBhcHQ9OThcclxuYT1ydHBtYXA6MTAwIFZQOS85MDAwMFxyXG5hPXJ0Y3AtZmI6MTAwIGdvb2ctcmVtYlxyXG5hPXJ0Y3AtZmI6MTAwIHRyYW5zcG9ydC1jY1xyXG5hPXJ0Y3AtZmI6MTAwIGNjbSBmaXJcclxuYT1ydGNwLWZiOjEwMCBuYWNrXHJcbmE9cnRjcC1mYjoxMDAgbmFjayBwbGlcclxuYT1mbXRwOjEwMCBwcm9maWxlLWlkPTJcclxuYT1ydHBtYXA6MTAxIHJ0eC85MDAwMFxyXG5hPWZtdHA6MTAxIGFwdD0xMDBcclxuYT1ydHBtYXA6MTAyIEgyNjQvOTAwMDBcclxuYT1ydGNwLWZiOjEwMiBnb29nLXJlbWJcclxuYT1ydGNwLWZiOjEwMiB0cmFuc3BvcnQtY2NcclxuYT1ydGNwLWZiOjEwMiBjY20gZmlyXHJcbmE9cnRjcC1mYjoxMDIgbmFja1xyXG5hPXJ0Y3AtZmI6MTAyIG5hY2sgcGxpXHJcbmE9Zm10cDoxMDIgbGV2ZWwtYXN5bW1ldHJ5LWFsbG93ZWQ9MTtwYWNrZXRpemF0aW9uLW1vZGU9MTtwcm9maWxlLWxldmVsLWlkPTQyMDAxZlxyXG5hPXJ0cG1hcDoxMjEgcnR4LzkwMDAwXHJcbmE9Zm10cDoxMjEgYXB0PTEwMlxyXG5hPXJ0cG1hcDoxMjcgSDI2NC85MDAwMFxyXG5hPXJ0Y3AtZmI6MTI3IGdvb2ctcmVtYlxyXG5hPXJ0Y3AtZmI6MTI3IHRyYW5zcG9ydC1jY1xyXG5hPXJ0Y3AtZmI6MTI3IGNjbSBmaXJcclxuYT1ydGNwLWZiOjEyNyBuYWNrXHJcbmE9cnRjcC1mYjoxMjcgbmFjayBwbGlcclxuYT1mbXRwOjEyNyBsZXZlbC1hc3ltbWV0cnktYWxsb3dlZD0xO3BhY2tldGl6YXRpb24tbW9kZT0wO3Byb2ZpbGUtbGV2ZWwtaWQ9NDIwMDFmXHJcbmE9cnRwbWFwOjEyMCBydHgvOTAwMDBcclxuYT1mbXRwOjEyMCBhcHQ9MTI3XHJcbmE9cnRwbWFwOjEyNSBIMjY0LzkwMDAwXHJcbmE9cnRjcC1mYjoxMjUgZ29vZy1yZW1iXHJcbmE9cnRjcC1mYjoxMjUgdHJhbnNwb3J0LWNjXHJcbmE9cnRjcC1mYjoxMjUgY2NtIGZpclxyXG5hPXJ0Y3AtZmI6MTI1IG5hY2tcclxuYT1ydGNwLWZiOjEyNSBuYWNrIHBsaVxyXG5hPWZtdHA6MTI1IGxldmVsLWFzeW1tZXRyeS1hbGxvd2VkPTE7cGFja2V0aXphdGlvbi1tb2RlPTE7cHJvZmlsZS1sZXZlbC1pZD00MmUwMWZcclxuYT1ydHBtYXA6MTA3IHJ0eC85MDAwMFxyXG5hPWZtdHA6MTA3IGFwdD0xMjVcclxuYT1ydHBtYXA6MTA4IEgyNjQvOTAwMDBcclxuYT1ydGNwLWZiOjEwOCBnb29nLXJlbWJcclxuYT1ydGNwLWZiOjEwOCB0cmFuc3BvcnQtY2NcclxuYT1ydGNwLWZiOjEwOCBjY20gZmlyXHJcbmE9cnRjcC1mYjoxMDggbmFja1xyXG5hPXJ0Y3AtZmI6MTA4IG5hY2sgcGxpXHJcbmE9Zm10cDoxMDggbGV2ZWwtYXN5bW1ldHJ5LWFsbG93ZWQ9MTtwYWNrZXRpemF0aW9uLW1vZGU9MDtwcm9maWxlLWxldmVsLWlkPTQyZTAxZlxyXG5hPXJ0cG1hcDoxMDkgcnR4LzkwMDAwXHJcbmE9Zm10cDoxMDkgYXB0PTEwOFxyXG5hPXJ0cG1hcDoxMjQgcmVkLzkwMDAwXHJcbmE9cnRwbWFwOjExOSBydHgvOTAwMDBcclxuYT1mbXRwOjExOSBhcHQ9MTI0XHJcbmE9cnRwbWFwOjEyMyB1bHBmZWMvOTAwMDBcclxuYT1zc3JjLWdyb3VwOkZJRCAyMjA2MTA0MjM4IDIyNjk0ODE1OTZcclxuYT1zc3JjOjIyMDYxMDQyMzggY25hbWU6eU5KMDF0cEFQMUx2RjdHT1xyXG5hPXNzcmM6MjIwNjEwNDIzOCBtc2lkOklFd3hMVnBQYlRxMFBDb3RlSGhtVmlMZFE2aVFNTjhTUFRyZCAzNDgzYTk2YS1lMDM3LTRkZTUtYWQzNC05ZjJhYzM1ZDRjYTVcclxuYT1zc3JjOjIyMDYxMDQyMzggbXNsYWJlbDpJRXd4TFZwUGJUcTBQQ290ZUhobVZpTGRRNmlRTU44U1BUcmRcclxuYT1zc3JjOjIyMDYxMDQyMzggbGFiZWw6MzQ4M2E5NmEtZTAzNy00ZGU1LWFkMzQtOWYyYWMzNWQ0Y2E1XHJcbmE9c3NyYzoyMjY5NDgxNTk2IGNuYW1lOnlOSjAxdHBBUDFMdkY3R09cclxuYT1zc3JjOjIyNjk0ODE1OTYgbXNpZDpJRXd4TFZwUGJUcTBQQ290ZUhobVZpTGRRNmlRTU44U1BUcmQgMzQ4M2E5NmEtZTAzNy00ZGU1LWFkMzQtOWYyYWMzNWQ0Y2E1XHJcbmE9c3NyYzoyMjY5NDgxNTk2IG1zbGFiZWw6SUV3eExWcFBiVHEwUENvdGVIaG1WaUxkUTZpUU1OOFNQVHJkXHJcbmE9c3NyYzoyMjY5NDgxNTk2IGxhYmVsOjM0ODNhOTZhLWUwMzctNGRlNS1hZDM0LTlmMmFjMzVkNGNhNVxyXG4ifQ=="
 		
 		cmd := exec.Command("/src/github.com/pion/webrtc/examples/rtp-forwarder/jsfiddle/script.sh",token)
 		stdout, _ := cmd.StdoutPipe()
@@ -289,7 +270,7 @@ func serve(addr string) error {
 				}
 				return
 			}
-		}	
+		}
 
 		// Serve the main page
 		err = homeTemplate.Execute(w, examples)
@@ -299,6 +280,11 @@ func serve(addr string) error {
 	})
 
 	// Start the server
+	if  addr != ":80" {
+		ip := strings.Split(addr, ":")[0]
+		go http.ListenAndServe( ip+":80", http.HandlerFunc(redirect))
+		return http.ListenAndServeTLS( ip+":443", PUBLIC_KEY, PRIV_KEY, nil)
+	}
 	return http.ListenAndServe(addr, nil)
 }
 

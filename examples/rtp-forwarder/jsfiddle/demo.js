@@ -1,12 +1,12 @@
 
 /* eslint-env browser */
-var host = "http://localhost"
-//var host = "https://testingwebrtc.ddns.net"
+//var host = "http://localhost"
+var host = "http://159.65.97.50"
 
 var pcMap = new Map()
 var xhrMap = new Map()
 
-let camId = 5
+var camId = 5
 
 function addCamera(url, description){
   var table = document.getElementById("cameras");
@@ -16,6 +16,10 @@ function addCamera(url, description){
   var cell1 = row.insertCell(0);
   var element1= document.createElement("input");
   element1.type="text";
+
+  if (url == "")
+    url = "http://192.168.0.234:4747/video"
+
   element1.value= url
   element1.id = "url"+camId
   cell1.appendChild(element1);
@@ -196,7 +200,7 @@ function connectStream(id){
   listenPc(id)
 
   pc.addStream(stream)
-  pc.createOffer().then(d => {
+  pc.createOffer().then(function(d) {
     pc.setLocalDescription(d)
   }).catch("error")
 
@@ -224,51 +228,10 @@ function connectStream(id){
 
 }
 
-function connectStreamNavigator(id){
-  navigator.mediaDevices.enumerateDevices()
-  .then(devices => {
-    var camera = devices.find(device => device.kind == "videoinput" && device.label == 'HP Wide Vision FHD Camera (0bda:58e6)');
-    if (camera) {
-      var constraints = { deviceId: { exact: camera.deviceId } };
-      return navigator.mediaDevices.getUserMedia({ video: constraints });
-    }
-  })
-  .then(stream => {
-      pc = new RTCPeerConnection({
-      iceServers: [
-        {
-          urls: 'stun:stun.l.google.com:19302'
-        }
-        ]
-      })
-      pcMap.set(id, pc)
-      listenPc(id)
-
-      pc.addStream(document.getElementById('localcamera').srcObject = stream)
-      pc.createOffer().then(d => pc.setLocalDescription(d)).catch(log)
-    })
-  .catch(e => console.error(e));
-}
-
-function stopStream(id){
-  pcMap.get(id).close()
-
-  if (id == 'localcamera'){
-    document.getElementById('localcamera').srcObject = null
-    pcMap.delete(id)
-  }
-
-  if(xhrMap.has(id)){
-    console.log("abort "+id)
-    xhrMap.get(id).abort()
-    xhrMap.delete(id)
-  }
-}
-
 function listenPc(id){
   var pc = pcMap.get(id)
-  pc.oniceconnectionstatechange = e => console.log(pc.iceConnectionState)
-  pc.onicecandidate = event => {
+  pc.oniceconnectionstatechange = function(e) { console.log(pc.iceConnectionState) }
+  pc.onicecandidate = function(event) {
     if (event.candidate === null) {
       var localSesion = btoa(JSON.stringify(pc.localDescription));
 
@@ -305,7 +268,7 @@ function getToken(data, id){
   xhr.send(data);
 }
 
-window.startSession = (id, remoteSesion) => {
+window.startSession = function(id, remoteSesion) {
   try {
     pcMap.get(id).setRemoteDescription(new RTCSessionDescription(JSON.parse(atob(remoteSesion))))
   } catch (e) {

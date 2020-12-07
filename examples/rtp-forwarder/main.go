@@ -46,6 +46,7 @@ func main() {
 
 	host = *hostt
 
+	fmt.Printf("HOST : %s \n", host)
 	fmt.Printf("Listening address %s \n", *addr)
 
 	if *addr == ""{
@@ -228,13 +229,12 @@ func main() {
     if err != nil {
         panic(err)
     }
-    //fmt.Println(res.Status)
+
     defer res.Body.Close()
-    //body, err := ioutil.ReadAll(res.Body)
+
     if err != nil {
         panic(err)
     }
-    //fmt.Println(string(body))
 
 	// Wait for context to be done
 	<-ctx.Done()

@@ -53,6 +53,18 @@ func redirect(w http.ResponseWriter, req *http.Request) {
         http.StatusTemporaryRedirect)
 }
 
+//redirect request poty 443 to port 80
+func redirect443to80(w http.ResponseWriter, req *http.Request) {
+ // remove/add not default ports from req.Host
+    target := "http://" + req.Host + req.URL.Path
+    if len(req.URL.RawQuery) > 0 {
+        target += "?" + req.URL.RawQuery
+    }
+    log.Printf("redirect to: %s", target)
+    http.Redirect(w, req, target,
+        http.StatusTemporaryRedirect)
+}
+
 func main() {
 	addr := flag.String("address", ":80", "Address to host the HTTP server on.")
 	flag.Parse()
@@ -78,6 +90,11 @@ func serve(addr string) error {
 	http.HandleFunc("/sendtokenstreamer", func(w http.ResponseWriter, req *http.Request) {
 		// Parses the request body
 		req.ParseForm()
+
+		//Reset vars connection for test
+		token_stream = ""
+		token_connect = ""
+
 		//user := req.Form.Get("user")
 		//id_camera := req.Form.Get("id_camera")
 		token := req.Form.Get("token")
@@ -282,8 +299,9 @@ func serve(addr string) error {
 	// Start the server
 	if  addr != ":80" {
 		ip := strings.Split(addr, ":")[0]
-		go http.ListenAndServe( ip+":80", http.HandlerFunc(redirect))
-		return http.ListenAndServeTLS( ip+":443", PUBLIC_KEY, PRIV_KEY, nil)
+		fmt.Printf(ip+" CONECTING 443")
+		go http.ListenAndServe( ip+":80", nil)
+		return http.ListenAndServeTLS( ip+":443", PUBLIC_KEY, PRIV_KEY, http.HandlerFunc(redirect443to80))
 	}
 	return http.ListenAndServe(addr, nil)
 }

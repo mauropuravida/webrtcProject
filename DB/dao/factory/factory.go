@@ -2,10 +2,8 @@ package factory
 
 import (
 	"log"
-
-	"github.com/gustavocd/dao-pattern-in-go/dao/interfaces"
-	"github.com/gustavocd/dao-pattern-in-go/dao/mysql"
 )
+//importar modelo y las interfaces
 
 func FactoryDao(e string) interfaces.UserDao {
 	var i interfaces.UserDao

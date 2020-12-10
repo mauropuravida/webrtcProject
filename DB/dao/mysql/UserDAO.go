@@ -1,11 +1,11 @@
 package mysql
 
-import "github.com/gustavocd/dao-pattern-in-go/models"
+import "models"
 
-type UserImplMysql struct {
+type UserDAO struct {
 }
 
-func (dao UserImplMysql) Create(u *models.User) error {
+func (dao UserDAO) Create(u *models.User) error {
 	query := "INSERT INTO Users (name, surname, age, email, created, password) VALUES (?,?,?,?,?,?)"
 	db := get()
 	defer db.Close()
@@ -30,7 +30,7 @@ func (dao UserImplMysql) Create(u *models.User) error {
 	return nil
 }
 
-func (dao UserImplMysql) GetAll() ([]models.User, error) {
+func (dao UserDAO) GetAll() ([]models.User, error) {
 	query := "SELECT * FROM Users"
 	users := make([]models.User, 0)
 	db := get()
@@ -61,7 +61,7 @@ func (dao UserImplMysql) GetAll() ([]models.User, error) {
 	return users, nil
 
 }
-func (dao UserImplMysql) Delete(id int) ([]models.User, error) {
+func (dao UserDAO) Delete(id int) ([]models.User, error) {
 	query := "DELETE FROM Users WHERE id=?"
 	users := make([]models.User, 0)
 	db := get()

@@ -1,6 +1,7 @@
 package interfaces
 
 import 
+//importar modelo
 
 type ICameraDAO interface {
 	Create(u *models.Camera) error

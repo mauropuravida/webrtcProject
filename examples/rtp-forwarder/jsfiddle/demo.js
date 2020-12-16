@@ -78,12 +78,16 @@ function addCamera(url, description){
   document.getElementById("ipcamera"+camId).addEventListener('click', function(){ connectStream(privateCamId)})
   document.getElementById("remove"+camId).addEventListener('click', function(){
 
-    //TODO delete from database
+    var xhr = new XMLHttpRequest();
+    xhrMap.set(id, xhr)
+    xhr.withCredentials = true;
+    // await one minute for response 
+    xhr.timeout = 60000;
+    xhr.open("POST", host+"/deletecamera");
+    xhr.send(data);
     var row = document.getElementById('rowcam'+privateCamId);
     row.parentNode.removeChild(row);
   })
-
-  //TODO add to database if not exist o ver como manejar para reutilizar esta funcion cuando se cargan desde base 
 
   camId = camId + 1
 }

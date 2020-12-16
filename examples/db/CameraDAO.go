@@ -1,12 +1,11 @@
-package mysql
+package db
 
-import "models"
 
-type UserDAO struct {
+type CameraDAO struct {
 }
 
-func (dao UserDAO) Create(u *models.User) error {
-	query := "INSERT INTO Users (name, surname, age, email, created, password) VALUES (?,?,?,?,?,?)"
+func InsertCam(w http.ResponseWriter, r *http.Request) error {
+	query := "INSERT INTO Cameras(user, active, created, loc, token_session_camera, token_session_consumer, id_camera) VALUES (?,?,?,?,?,?,?)"
 	db := get()
 	defer db.Close()
 	stmt, err := db.Prepare(query)
@@ -15,8 +14,12 @@ func (dao UserDAO) Create(u *models.User) error {
 		return err
 	}
 
+	user := r.FormValue("user")
+	
+
+
 	defer stmt.Close()
-	result, err := stmt.Exec(u.FirstName, u.LastName, u.Email)
+	/*result, err := stmt.Exec(user, false, time.now() , u.loc, u.token_session_camera, u.token_session_consumer, u.id_camera)
 	if err != nil {
 		return err
 	}
@@ -25,12 +28,12 @@ func (dao UserDAO) Create(u *models.User) error {
 	if err != nil {
 		return err
 	}
-
-	u.ID = int(id)
+*/
+	)
 	return nil
 }
-
-func (dao UserDAO) GetAll() ([]models.User, error) {
+/*
+func (dao UserImplMysql) GetAll() ([]models.User, error) {
 	query := "SELECT * FROM Users"
 	users := make([]models.User, 0)
 	db := get()
@@ -61,12 +64,17 @@ func (dao UserDAO) GetAll() ([]models.User, error) {
 	return users, nil
 
 }
-func (dao UserDAO) Delete(id int) ([]models.User, error) {
-	query := "DELETE FROM Users WHERE id=?"
-	users := make([]models.User, 0)
+
+*/
+func deleteCam(w http.ResponseWriter, r *http.Request) error {
+	query := "DELETE FROM Cameras WHERE user=?"
+	
 	db := get()
 	defer db.Close()
 
+	user:= r.URL.Query().Get("id")
+
+	log.Println("delete"+user)
 	stmt, err := db.Prepare(query)
 	if err != nil {
 		return  err
@@ -74,12 +82,13 @@ func (dao UserDAO) Delete(id int) ([]models.User, error) {
 
 	defer stmt.Close()
 
-	rows, err :=stmt.Exec(id)
+	rows, err :=stmt.Exec(user)
 	if err != nil {
 		return err
 	}
-
+	http.Redirect(w, r, "/", 301)
 	
 	return nil
+
 
 }

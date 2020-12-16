@@ -180,8 +180,9 @@ func serve(addr string) error {
 		loc := req.Form.Get("id_camera")
 
 		fmt.Printf(user+" "+loc)
+
 		return
-		//TODO delete camera in DB
+		
 	})
 
 	//Active/desactive camera
@@ -339,3 +340,5 @@ func getExamples() (*Examples, error) {
 
 	return &examples, nil
 }
+
+

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"os"
 
-	"github.com/gustavocd/dao-pattern-in-go/models"
+	"/models"
 )
 
 func GetConfiguration() (models.Configuration, error) {

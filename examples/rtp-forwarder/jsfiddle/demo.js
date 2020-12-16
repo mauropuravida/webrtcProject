@@ -77,9 +77,13 @@ function addCamera(url, description){
   var privateCamId = camId
   document.getElementById("ipcamera"+camId).addEventListener('click', function(){ connectStream(privateCamId)})
   document.getElementById("remove"+camId).addEventListener('click', function(){
+
+    //TODO delete from database
     var row = document.getElementById('rowcam'+privateCamId);
     row.parentNode.removeChild(row);
   })
+
+  //TODO add to database if not exist o ver como manejar para reutilizar esta funcion cuando se cargan desde base 
 
   camId = camId + 1
 }
@@ -267,6 +271,11 @@ function getToken(data, id){
   xhr.setRequestHeader('token', 'eltoken');
   xhr.send(data);
 }
+
+document.getElementById("btn-login").addEventListener('click', function(){
+  //TODO me traigo toda la info del usuario para usarla en var globales
+  //TODO cargo todas las cams disponibles en bd  
+});
 
 window.startSession = function(id, remoteSesion) {
   try {

@@ -2,6 +2,8 @@ package factory
 
 import (
 	"log"
+	/interfaces
+	./model
 )
 //importar modelo y las interfaces
 

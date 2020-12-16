@@ -60,6 +60,7 @@ func serve(addr string) error {
 	// Load the templates
 	homeTemplate := template.Must(template.ParseFiles("index.html"))
 
+
 	//send stream from camera
 	http.HandleFunc("/sendtokenstreamer", func(w http.ResponseWriter, req *http.Request) {
 		// Parses the request body

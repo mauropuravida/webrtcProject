@@ -18,6 +18,16 @@ let pc = new RTCPeerConnection({
 }).catch(log)*/
 //var sobject = document.getElementById('streamtest').srcObject
 //var stream = new MediaStream()
+
+function deleteCam(){
+  log.console("click en borrar");
+  // var xhr = new XMLHttpRequest();
+  // xhr.open("POST", host+"/deletecam/"+id);
+
+}
+
+
+
 function connectStream(){
 
   myImg = new Image()
@@ -85,3 +95,6 @@ window.startSession = () => {
     alert(e)
   }
 }
+
+
+

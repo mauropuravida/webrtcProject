@@ -4,6 +4,7 @@ import ("time"
 	"net/http"
 	"database/sql"
 	 m "project/webrtcProject/examples/models"
+	 "fmt"
 )
 
 
@@ -12,7 +13,7 @@ import ("time"
 func InsertCam(user int, loc string) (int64,error) {
 	query := "INSERT INTO Cameras(user, active, created, loc, token_session_camera, token_session_consumer, id_camera) VALUES (?,?,?,?,?,?,?)"
 	db := get()
-	defer db.Close()
+	
 	stmt, err := db.Prepare(query)
 
 	if err != nil {
@@ -29,6 +30,7 @@ func InsertCam(user int, loc string) (int64,error) {
 	if err != nil {
 		return 0,err
 	}
+
 	return id,nil
 }
 	
@@ -36,7 +38,6 @@ func GetCamsByUser(user int) ([]m.Camera,error) {
 	query := "select * from cameras where users_id=?"
 	db := get()
 	cams := make([]m.Camera, 0)
-	defer db.Close()
 	stmt, err := db.Prepare(query)
 
 	if err != nil {
@@ -44,57 +45,25 @@ func GetCamsByUser(user int) ([]m.Camera,error) {
 	}
 
 	defer stmt.Close()
-	result, err := stmt.Query(query,user)
+	result, err := stmt.Query(user)
 	if err != nil {
 		return nil,err
 	}
 	for result.Next() {
 		var row m.Camera
+		var date string
 		//user, active, created, loc, token_session_camera, token_session_consumer, id_camera
-		err := result.Scan(&row.ID, &row.Active, &row.Loc, &row.T_s_cam, &row.T_s_con, &row.Id_cam)
+		err := result.Scan(&row.ID, &row.Active, &date, &row.Loc, &row.T_s_cam, &row.T_s_con, &row.Id_cam, &row.User_id)
 		if err != nil {
 			return nil, err
 		}
-
+		fmt.Println(row.ID)
 		cams = append(cams, row)
 	}
+	defer db.Close()
 	return cams,nil
 }
 
-/*
-func (dao UserImplMysql) GetAll() ([]models.User, error) {
-	query := "SELECT * FROM Users"
-	users := make([]models.User, 0)
-	db := get()
-	defer db.Close()
-
-	stmt, err := db.Prepare(query)
-	if err != nil {
-		return users, err
-	}
-
-	defer stmt.Close()
-
-	rows, err := stmt.Query()
-	if err != nil {
-		return users, err
-	}
-
-	for rows.Next() {
-		var row models.User
-		err := rows.Scan(&row.ID, &row.FirstName, &row.LastName, &row.Email)
-		if err != nil {
-			return nil, err
-		}
-
-		users = append(users, row)
-	}
-
-	return users, nil
-
-}
-
-*/
 func deleteCam(w http.ResponseWriter, r *http.Request) (sql.Result ,error) {
 	query := "DELETE FROM Cameras WHERE user=?"
 	

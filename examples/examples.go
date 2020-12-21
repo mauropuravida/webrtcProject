@@ -17,7 +17,7 @@ import (
 	"project/webrtcProject/examples/db"
 	"strconv"
 	"project/webrtcProject/examples/models"
-	"path"
+
 
 )
 
@@ -221,19 +221,26 @@ func serve(addr string) error {
 
 
 	// get cams from user 
-	http.HandleFunc("/getCameras/{id}", func(w http.ResponseWriter, r *http.Request) {
-		vars := r.URL.Path
-		varId := path.Base(vars)
-		id, err := strconv.Atoi(varId) 	
-		if err!=nil {
-			return
-		}
+	http.HandleFunc("/getCameras", func(w http.ResponseWriter, req *http.Request) {
+		
+		req.ParseForm()		// Parses the request body
+		id := req.Form.Get("id")
+		
 		cams := make([]models.Camera, 0)
-		cams, err= db.GetCamsByUser(id)
 		if err!=nil {
 			return
 		}
-		fmt.Printf("loc: "+ cams[0].Loc)
+
+		user_id, err:= strconv.Atoi(id)
+		if err == nil {
+			cams, err= db.GetCamsByUser(user_id)
+		}
+		if err!=nil {
+			fmt.Println("ERROR")
+			fmt.Println(err)
+			return
+		}
+		
 		fmt.Fprintln(w, cams)
 		
 		return

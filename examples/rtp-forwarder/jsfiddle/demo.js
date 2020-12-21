@@ -1,7 +1,7 @@
 
 /* eslint-env browser */
-//var host = "http://localhost"
-var host = "http://159.65.97.50"
+var host = "http://localhost"
+//var host = "http://159.65.97.50"
 
 var pcMap = new Map()
 var xhrMap = new Map()
@@ -280,25 +280,25 @@ function getToken(data, id){
 
 function login() {
 
+    var xhr = new XMLHttpRequest();
 
     console.log("Username: "+document.getElementById("username").innerHTML);
     currentUser = 1;
-    fetch("/getCameras/" + currentUser, {
-        method: "GET",
-        mode: 'cors',
-        headers: {
-            "Content-Type": "application/json",
-            'Accept': 'application/json'
+    xhr.onload = function () {
+        console.log(this.readyState);
+        if (this.readyState === 4) {
+            console.log(this.responseText);
         }
-    }).then(r => {
-        r.json().then(json => {
-            console.log(json);
-        })
-       }
-    ).catch(err => {
-        // Do something for an error here
-        console.log("Error Reading data " + err);
-    });;
+    };
+
+
+    data = 'id=1';
+    xhr.withCredentials = true;
+    xhr.open("POST", host + "/getCameras");
+    xhr.setRequestHeader("cache-control", "no-cache");
+    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    xhr.setRequestHeader('token', 'eltoken');
+    xhr.send(data);
 }
 
 window.startSession = function(id, remoteSesion) {

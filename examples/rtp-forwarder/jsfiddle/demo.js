@@ -85,11 +85,12 @@ function addCamera(url, description, camId){
   document.getElementById("remove"+camId).addEventListener('click', function(){
 
     var xhr = new XMLHttpRequest();
-    xhrMap.set(camId, xhr)
     xhr.withCredentials = true;
     xhr.open("POST", host + "/deletecamera");
-    data = "user=" + currentUser+"&id_camera="+camId;
-    console.log("data: "+data);
+    data = "id_camera="+camId;
+    console.log("data: " + data);
+    xhr.setRequestHeader("cache-control", "no-cache");
+    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
     xhr.send(data);
     var row = document.getElementById('rowcam'+privateCamId);
     row.parentNode.removeChild(row);
@@ -100,7 +101,6 @@ function addCamera(url, description, camId){
 
     })
 
-  camId = camId + 1
 }
 
 function connectStream(id){
@@ -301,14 +301,14 @@ function login() {
         if (this.readyState === 4) {
             var data = JSON.parse(this.responseText);
             for (var key in data) {
-                addCamera("", data[key].Loc, data[key].Id_cam);
+                addCamera("", data[key].Loc, data[key].ID);
             }
 
         }
     };
 
 
-    data = 'id=1'; //+ currentUser;
+    data = 'id=1'; // currentUser;
     xhr.withCredentials = true;
     xhr.open("POST", host + "/getCameras");
     xhr.setRequestHeader("cache-control", "no-cache");

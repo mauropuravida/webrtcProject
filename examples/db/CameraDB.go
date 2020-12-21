@@ -63,8 +63,8 @@ func GetCamsByUser(user int) ([]m.Camera,error) {
 	return cams,nil
 }
 
-func DeleteCam(idCam int, idUser int ) (sql.Result ,error) {
-	query := "DELETE FROM Cameras WHERE user_id=? AND id=?"
+func DeleteCam(idCam int) (sql.Result ,error) {
+	query := "DELETE FROM Cameras WHERE  id=?"
 	
 	db := get()
 
@@ -76,7 +76,7 @@ func DeleteCam(idCam int, idUser int ) (sql.Result ,error) {
 
 	defer stmt.Close()
 
-	rows, err :=stmt.Exec(idUser,idCam)
+	rows, err :=stmt.Exec(idCam)
 
 	if err != nil {
 		return nil, err

@@ -186,17 +186,23 @@ func serve(addr string) error {
 	http.HandleFunc("/deletecamera", func(w http.ResponseWriter, req *http.Request) {
 		// Parses the request body
 		req.ParseForm()
-		user := req.Form.Get("user")
 		idCam := req.Form.Get("id_camera")
+		fmt.Println("idCam")
+		fmt.Println(idCam)
 
-
-		user_id, err:= strconv.Atoi(user)
 		cam_id, err:= strconv.Atoi(idCam)
 		if err == nil {
-			db.DeleteCam(cam_id,user_id)
+		fmt.Println("ESTA BORRANDO EN BASE")
+			db.DeleteCam(cam_id)
+		}
+
+		if err != nil {
+		fmt.Println("Error: ")
+		fmt.Println(err)
+			
 		}
 			
-		fmt.Printf(user+" "+idCam)
+		fmt.Printf("idcam: "+idCam)
 
 		return
 		

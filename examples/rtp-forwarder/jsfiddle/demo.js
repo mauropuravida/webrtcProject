@@ -267,7 +267,7 @@ function getToken(data, id){
       console.log("time lost");
       getToken("");
   }
-  // await one minute for response 
+  // await one minute for response   
   xhr.timeout = 60000;
   xhr.open("POST", host+"/sendtokenstreamer");
   xhr.setRequestHeader("cache-control", "no-cache");
@@ -276,10 +276,30 @@ function getToken(data, id){
   xhr.send(data);
 }
 
-document.getElementById("btn-login").addEventListener('click', function(){
-  //TODO me traigo toda la info del usuario para usarla en var globales
-  //TODO cargo todas las cams disponibles en bd  
-});
+
+
+function login() {
+
+
+    console.log("Username: "+document.getElementById("username").innerHTML);
+    currentUser = 1;
+    fetch("/getCameras/" + currentUser, {
+        method: "GET",
+        mode: 'cors',
+        headers: {
+            "Content-Type": "application/json",
+            'Accept': 'application/json'
+        }
+    }).then(r => {
+        r.json().then(json => {
+            console.log(json);
+        })
+       }
+    ).catch(err => {
+        // Do something for an error here
+        console.log("Error Reading data " + err);
+    });;
+}
 
 window.startSession = function(id, remoteSesion) {
   try {
@@ -288,3 +308,5 @@ window.startSession = function(id, remoteSesion) {
     alert(e)
   }
 }
+
+var currentUser=" ";

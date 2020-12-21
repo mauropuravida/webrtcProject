@@ -1,12 +1,11 @@
 package db
-
-
-type UserDAO struct {
-}
-
-func (dao UserDAO) GetAll() ([]models.User, error) {
+import ("database/sql"
+	_"project/webrtcProject/examples/models"
+)
+/*
+func GetAll() ([]models.user, error) {
 	query := "SELECT * FROM Users"
-	users := make([]models.User, 0)
+	users := make([]models.user, 0)
 	db := get()
 	defer db.Close()
 
@@ -23,7 +22,7 @@ func (dao UserDAO) GetAll() ([]models.User, error) {
 	}
 
 	for rows.Next() {
-		var row models.User
+		var row models.user
 		err := rows.Scan(&row.ID, &row.FirstName, &row.LastName, &row.Email)
 		if err != nil {
 			return nil, err
@@ -34,26 +33,25 @@ func (dao UserDAO) GetAll() ([]models.User, error) {
 
 	return users, nil
 
-}
-func (dao UserDAO) Delete(id int) ([]models.User, error) {
+}*/
+func Delete(id int) ( sql.Result,error) {
 	query := "DELETE FROM Users WHERE id=?"
-	users := make([]models.User, 0)
 	db := get()
 	defer db.Close()
 
 	stmt, err := db.Prepare(query)
 	if err != nil {
-		return  err
+		return  nil, err
 	}
 
 	defer stmt.Close()
 
 	rows, err :=stmt.Exec(id)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	
-	return nil
+	return rows, nil
 
 }

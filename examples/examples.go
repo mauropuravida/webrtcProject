@@ -14,6 +14,11 @@ import (
 	"strings"
 	"bufio"
 	"time"
+	"project/webrtcProject/examples/db"
+	"strconv"
+	"project/webrtcProject/examples/models"
+	"path"
+
 )
 
 const (
@@ -168,8 +173,13 @@ func serve(addr string) error {
 		loc := req.Form.Get("loc")
 
 		fmt.Printf(user+" "+loc)
+
+		user_id, err:= strconv.Atoi(user)
+		if err == nil {
+			db.InsertCam(user_id,loc)
+		}
 		return
-		//TODO agregate new camera in DB
+		
 	})
 
 	//Delete camera
@@ -207,6 +217,29 @@ func serve(addr string) error {
 		fmt.Printf(email+" "+loc)
 		return
 	})
+
+
+
+	// get cams from user 
+	http.HandleFunc("/getCameras/{id}", func(w http.ResponseWriter, r *http.Request) {
+		vars := r.URL.Path
+		varId := path.Base(vars)
+		id, err := strconv.Atoi(varId) 	
+		if err!=nil {
+			return
+		}
+		cams := make([]models.Camera, 0)
+		cams, err= db.GetCamsByUser(id)
+		if err!=nil {
+			return
+		}
+		fmt.Printf("loc: "+ cams[0].Loc)
+		fmt.Fprintln(w, cams)
+		
+		return
+	})
+
+
 
 	//Generate session token
 	http.HandleFunc("/gentoken", func(w http.ResponseWriter, req *http.Request) {

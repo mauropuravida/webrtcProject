@@ -1,14 +1,14 @@
 <h2>CAMARAS</h2>
+<label>Username:</label>
+<input type='text' id='username' />
 
-<label>Username:</label> 
-<input type="text" name="username" id="username" />
-<button id="btn-login">Login</button>
+<input id='btn-login' type='button' value='Login' onclick="login()" />
 <table id='cameras'>
-  <tr>
-    <th>URL</th>
-    <th>Descripcion</th>
-    <th>Stream</th>
-    <th><input id='addCamera' type='button' value='Agregar Camara' onclick="addCamera('','')" /></th>
-  </tr>
+    <tr>
+        <th>URL</th>
+        <th>Descripcion</th>
+        <th>Stream</th>
+        <th><input id='addCamera' type='button' value='Agregar Camara' onclick="addCamera('','')" /></th>
+    </tr>
 </table>
 

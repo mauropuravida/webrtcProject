@@ -5,10 +5,10 @@ var host = "http://localhost"
 
 var pcMap = new Map()
 var xhrMap = new Map()
+var currentUser;
 
-var camId = 5
 
-function addCamera(url, description){
+function addCamera(url, description, camId){
   var table = document.getElementById("cameras");
   var row = table.insertRow();
   row.id = 'rowcam'+camId
@@ -45,49 +45,60 @@ function addCamera(url, description){
   var cell4 = row.insertCell(3);
   var element41 = document.createElement("input");
   element41.type="button";
-  element41.value = "Modo Gris"
-  element41.id = "greyMode"+camId
+  element41.value = "Modo Gris";
+  element41.id = "greyMode" + camId;
 
   var element42 = document.createElement("input");
   element42.type="button";
-  element42.value = "Rotar"
-  element42.id = "rotateStream"+camId
+  element42.value = "Rotar";
+  element42.id = "rotateStream" + camId;
 
   var element43 = document.createElement("input");
   element43.type="button";
-  element43.value = "Conectar"
-  element43.id = "ipcamera"+camId
+  element43.value = "Conectar";
+  element43.id = "ipcamera" + camId;
 
   var element44 = document.createElement("input");
   element44.type="button";
-  element44.value = "Desconectar"
-  element44.id = "stopStream"+camId
+  element44.value = "Desconectar";
+  element44.id = "stopStream" + camId;
 
   var element45 = document.createElement("input");
   element45.type="button";
   element45.value = "Eliminar"
-  element45.id = "remove"+camId
+  element45.id = "remove" + camId
+
+  var element46 = document.createElement("input");
+  element46.type = "button";
+  element46.value = "Guardar";
+  element46.id = "save" + camId;
 
   cell4.appendChild(element41)
   cell4.appendChild(element42)
   cell4.appendChild(element43)
   cell4.appendChild(element44)
   cell4.appendChild(element45)
+  cell4.appendChild(element46)
 
   var privateCamId = camId
   document.getElementById("ipcamera"+camId).addEventListener('click', function(){ connectStream(privateCamId)})
   document.getElementById("remove"+camId).addEventListener('click', function(){
 
     var xhr = new XMLHttpRequest();
-    xhrMap.set(id, xhr)
+    xhrMap.set(camId, xhr)
     xhr.withCredentials = true;
-    // await one minute for response 
-    xhr.timeout = 60000;
-    xhr.open("POST", host+"/deletecamera");
+    xhr.open("POST", host + "/deletecamera");
+    data = "user=" + currentUser+"&id_camera="+camId;
+    console.log("data: "+data);
     xhr.send(data);
     var row = document.getElementById('rowcam'+privateCamId);
     row.parentNode.removeChild(row);
   })
+
+    document.getElementById("save" + camId).addEventListener('click', function () {
+        //todo delete + insert
+
+    })
 
   camId = camId + 1
 }
@@ -282,17 +293,22 @@ function login() {
 
     var xhr = new XMLHttpRequest();
 
-    console.log("Username: "+document.getElementById("username").innerHTML);
+    console.log("User id: "+document.getElementById("user-id").value);
+    //currentUser = document.getElementById("user-id").innerHTML;
     currentUser = 1;
     xhr.onload = function () {
         console.log(this.readyState);
         if (this.readyState === 4) {
-            console.log(this.responseText);
+            var data = JSON.parse(this.responseText);
+            for (var key in data) {
+                addCamera("", data[key].Loc, data[key].Id_cam);
+            }
+
         }
     };
 
 
-    data = 'id=1';
+    data = 'id=1'; //+ currentUser;
     xhr.withCredentials = true;
     xhr.open("POST", host + "/getCameras");
     xhr.setRequestHeader("cache-control", "no-cache");

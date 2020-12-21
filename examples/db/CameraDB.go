@@ -1,7 +1,6 @@
 package db
 import ("time"
-	"log"
-	"net/http"
+	
 	"database/sql"
 	 m "project/webrtcProject/examples/models"
 	 "fmt"
@@ -64,15 +63,12 @@ func GetCamsByUser(user int) ([]m.Camera,error) {
 	return cams,nil
 }
 
-func deleteCam(w http.ResponseWriter, r *http.Request) (sql.Result ,error) {
-	query := "DELETE FROM Cameras WHERE user=?"
+func DeleteCam(idCam int, idUser int ) (sql.Result ,error) {
+	query := "DELETE FROM Cameras WHERE user_id=? AND id=?"
 	
 	db := get()
-	defer db.Close()
 
-	user:= r.URL.Query().Get("id")
 
-	log.Println("delete"+user)
 	stmt, err := db.Prepare(query)
 	if err != nil {
 		return  nil, err
@@ -80,12 +76,12 @@ func deleteCam(w http.ResponseWriter, r *http.Request) (sql.Result ,error) {
 
 	defer stmt.Close()
 
-	rows, err :=stmt.Exec(user)
+	rows, err :=stmt.Exec(idUser,idCam)
 
 	if err != nil {
 		return nil, err
 	}
-	
+	defer db.Close()
 	return rows,nil
 
 

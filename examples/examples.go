@@ -187,9 +187,16 @@ func serve(addr string) error {
 		// Parses the request body
 		req.ParseForm()
 		user := req.Form.Get("user")
-		loc := req.Form.Get("id_camera")
+		idCam := req.Form.Get("id_camera")
 
-		fmt.Printf(user+" "+loc)
+
+		user_id, err:= strconv.Atoi(user)
+		cam_id, err:= strconv.Atoi(idCam)
+		if err == nil {
+			db.DeleteCam(cam_id,user_id)
+		}
+			
+		fmt.Printf(user+" "+idCam)
 
 		return
 		
@@ -241,7 +248,11 @@ func serve(addr string) error {
 			return
 		}
 		
-		fmt.Fprintln(w, cams)
+
+		data, _ := json.Marshal(cams)
+		
+
+		fmt.Fprintln(w, string(data))
 		
 		return
 	})

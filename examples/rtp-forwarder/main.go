@@ -25,6 +25,7 @@ type udpConn struct {
 
 var(
 	host = ""
+	ipCam = ""
 	)
 
 //Only work in linux
@@ -39,6 +40,7 @@ func createSdp(addr string, videoPort string){
 }
 
 func main() {
+	idCam := flag.String("idCam", " ", "Camera identification.")
 	addr := flag.String("address", "127.0.0.200", "Address to host the HTTP server on.")
 	portt := flag.Int("port", 4000, "Address to host the HTTP server on.")
 	hostt := flag.String("host", "http://localhost", "")
@@ -214,6 +216,7 @@ func main() {
     endpoint := host+"/sendtokenconnect"
     data := url.Values{}
     data.Set("token", signal.Encode(*peerConnection.LocalDescription()))
+	data.Set("id", idCam )
 
     client := &http.Client{}
     r, err := http.NewRequest("POST", endpoint, strings.NewReader(data.Encode())) // URL-encoded payload

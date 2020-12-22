@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS `dbcam`.`Cameras` (
   `active` TINYINT(1) NOT NULL,
   `created` DATE NOT NULL,
   `loc` VARCHAR(50) NOT NULL,
+  `url` VARCHAR(100) NULL,
   `token_session_camera` VARCHAR(1000) NULL,
   `token_session_consumer` VARCHAR(1000) NULL,
   `id_camera` INT NOT NULL,

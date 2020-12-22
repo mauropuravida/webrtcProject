@@ -9,32 +9,7 @@ var currentUser=1;
 
 
 function addCamera(url, description, camId) {
-    console.log("id cam : " + camId);
-    if (camId == 0) {
-
-        var xhr = new XMLHttpRequest();
-        xhr.onload = function () {
-            console.log(this.readyState);
-            if (this.readyState === 4) {
-
-                console.log("LLEGA: "+this.responseText);
-                var data = JSON.parse(this.responseText);
-                CamId = data.ID;
-
-            }
-        };
-        xhr.timeout = 60000;
-        xhr.withCredentials = true;
-        xhr.open("POST", host + "/addcamera");
-        data ="user=" + currentUser + "&loc=" + description;
-        console.log("data: " + data);
-        xhr.setRequestHeader("cache-control", "no-cache");
-        xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-        xhr.send(data);
-        
-    }
-
-
+    
   var table = document.getElementById("cameras");
   var row = table.insertRow();
   row.id = 'rowcam'+camId
@@ -109,7 +84,6 @@ function addCamera(url, description, camId) {
   var privateCamId = camId
   document.getElementById("ipcamera"+camId).addEventListener('click', function(){ connectStream(privateCamId)})
     document.getElementById("remove" + camId).addEventListener('click', function () {
-
         var xhr = new XMLHttpRequest();
         xhr.withCredentials = true;
         xhr.open("POST", host + "/deletecamera");
@@ -121,25 +95,45 @@ function addCamera(url, description, camId) {
         var row = document.getElementById('rowcam' + camId);
         row.parentNode.removeChild(row);
 
-
-
     })
 
     document.getElementById("save" + camId).addEventListener('click', function () {
-        
+        let newURL = document.getElementById("description" + camId).value;
+        let newDesc = document.getElementById("description" + camId).value;
+        // make like delete+ insert, problems with update (may be an update) 
         var xhr = new XMLHttpRequest();
         xhr.withCredentials = true;
-        xhr.open("POST", host + "/updatecamera");
-        data = "id_camera=" + camId + "&user=" + currentUser + "&loc=" + document.getElementById("description" + camId).value;
+        xhr.open("POST", host + "/deletecamera");
+        data = "id_camera=" + camId;
         console.log("data: " + data);
         xhr.setRequestHeader("cache-control", "no-cache");
         xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
         xhr.send(data);
+        var row = document.getElementById('rowcam' + camId);
+        row.parentNode.removeChild(row);
 
+        var xhr1 = new XMLHttpRequest();
+
+        xhr1.onload = function () {
+            console.log(this.readyState);
+            if (this.readyState === 4) {
+                //remoteSesion = this.responseText
+                setTimeout(window.startSession(id, this.responseText), 3000);
+                console.log(this.responseText);
+            }
+        };
+        xhr1.open("POST", host + "/addcamera");
+        data = "user=" + currentUser + "&loc=" + newDesc + "&url=" + newURL;
+        console.log("data: " + data);
+        xhr1.setRequestHeader("cache-control", "no-cache");
+        xhr1.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+        xhr1.send(data);
+        //addCamera(newURL, newDesc, );
 
     })
     
 }
+
 
 
 
@@ -160,6 +154,16 @@ function connectStream(id){
   var canvasStream = document.createElement("CANVAS");
   canvasStream.width = 480
   canvasStream.height = 360
+
+    var xhr = new XMLHttpRequest();
+    xhr.withCredentials = true;
+    xhr.open("POST", host + "/activecamera");
+    data = "id_camera=" + id+"&active=" + false;
+    console.log("data: " + data);
+    xhr.setRequestHeader("cache-control", "no-cache");
+    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    xhr.send(data);
+
 
   let rotateAngle = 0;
   let xrC = canvasClient.width;
@@ -227,14 +231,7 @@ function connectStream(id){
 
   var angle = 0;
 
-    var xhr = new XMLHttpRequest();
-    xhr.withCredentials = true;
-    xhr.open("POST", host + "/activecamera");
-    data = "id_camera=" + id;
-    console.log("data: " + data);
-    xhr.setRequestHeader("cache-control", "no-cache");
-    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-    xhr.send(data);
+   
 
   (function loop() {
     if (!this.paused && !this.ended && (!pcMap.has(id) || pcMap.get(id).connectionState != 'closed')) {
@@ -274,8 +271,18 @@ function connectStream(id){
   //obtain element
   var stopStream = document.getElementById('stopStream'+id)
 
-  //stop stream
-  function stop(){
+    //stop stream
+    function stop() {
+        var xhr = new XMLHttpRequest();
+        xhr.withCredentials = true;
+        xhr.open("POST", host + "/activecamera");
+        data = "id_camera=" + id+"&active="+false;
+        console.log("data: " + data);
+        xhr.setRequestHeader("cache-control", "no-cache");
+        xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+        xhr.send(data);
+
+     
     if (pcMap.has(id))
       pcMap.get(id).close()
 
@@ -327,6 +334,8 @@ function getToken(data, id){
       getToken("");
   }
   // await one minute for response   
+    //primero
+    //mandar id user
   xhr.timeout = 60000;
   xhr.open("POST", host+"/sendtokenstreamer");
   xhr.setRequestHeader("cache-control", "no-cache");

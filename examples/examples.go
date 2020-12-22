@@ -103,6 +103,8 @@ func serve(addr string) error {
 		//user := req.Form.Get("user")
 		//id_camera := req.Form.Get("id_camera")
 		token := req.Form.Get("token")
+		//TODO save token in database
+
 
 		if token_stream == ""{
 			token_stream = token
@@ -110,7 +112,8 @@ func serve(addr string) error {
 
 		// await for token_connect
 		endTime := time.Now().Add(time.Second * 61)
-		for time.Now().Before(endTime) {
+		for time.Now().Before(endTime) { //listening response 
+			//consultar que la base no devuelva vacio 
 			if token_connect != "" {
 				tokenResponse := token_connect
 				token_connect = ""
@@ -127,17 +130,25 @@ func serve(addr string) error {
 	http.HandleFunc("/sendtokenconnect", func(w http.ResponseWriter, req *http.Request) {
 		// Parses the request body
 		req.ParseForm()
-		token_connect = req.Form.Get("token")
-
-		token := token_stream
-		if token != ""{
+		token_connect := req.Form.Get("token")
+		id := req.Form.Get("id_camera")
+		cam_id, err:= strconv.Atoi(id)
+		
+		
+		if err == nil {
+			db.UpdateTokenCon(cam_id, token_connect)
+		}
+				
+		
+		if token_connect != ""{
 			fmt.Fprintln(w,token_connect)
 			return
 		}
 
+
 		fmt.Printf(token_connect)
 		return
-	})
+	}) 
 
 	//Delete vars only for *testing*
 	http.HandleFunc("/reset", func(w http.ResponseWriter, req *http.Request) {
@@ -153,9 +164,16 @@ func serve(addr string) error {
 	http.HandleFunc("/checkstream", func(w http.ResponseWriter, req *http.Request) {
 		// Parses the request body
 		req.ParseForm()
-		//user := req.Form.Get("user")
-		//id_camera := req.Form.Get("id_camera")
+		id_camera := req.Form.Get("id_camera")
 
+		cam_id, err:= strconv.Atoi(id_camera)
+		var token_stream string
+
+		if err == nil {
+			token_stream=db.GetTokenCam(cam_id)
+		}
+
+		
 		if token_stream != ""{
 			fmt.Fprintln(w, token_stream)
 			return
@@ -171,11 +189,15 @@ func serve(addr string) error {
 		req.ParseForm()
 		user := req.Form.Get("user")
 		loc := req.Form.Get("loc")
+		url := req.Form.Get("url")
 		var idcam int64
 		
 		user_id, err:= strconv.Atoi(user)
+
+		fmt.Println(err)
 		if err == nil {
-			idcam,err=db.InsertCam(user_id,loc)
+			fmt.Println("A BASE")
+			idcam,err=db.InsertCam(user_id,loc, url)
 		}
 
 		
@@ -192,14 +214,13 @@ func serve(addr string) error {
 		user := req.Form.Get("user")
 		loc := req.Form.Get("loc")
 		idCam := req.Form.Get("id_camera")
+		url:= req.Form.Get("url")
 
-		fmt.Println("AUPDATE");
 		fmt.Println(loc);
 		user_id, err:= strconv.Atoi(user)
 		cam_id, err:= strconv.Atoi(idCam)
 		if err == nil {
-		fmt.Println("abase")
-			db.UpdateCam(cam_id,user_id,loc)
+			db.UpdateCam(cam_id,user_id,loc, url)
 		}
 		return
 		
@@ -215,7 +236,6 @@ func serve(addr string) error {
 
 		cam_id, err:= strconv.Atoi(idCam)
 		if err == nil {
-		fmt.Println("ESTA BORRANDO EN BASE")
 			db.DeleteCam(cam_id)
 		}
 
@@ -236,12 +256,13 @@ func serve(addr string) error {
 		// Parses the request body
 		req.ParseForm()
 		id := req.Form.Get("id_camera")
+		active := req.Form.Get("active")
 		cam_id, err:= strconv.Atoi(id)
 		if err == nil {
-			db.UpdateActiveCam(true,cam_id)
+			db.UpdateActiveCam(active,cam_id)
 		}
 		return
-		//TODO active/desactive camera in DB
+		
 	})
 
 	//Login user

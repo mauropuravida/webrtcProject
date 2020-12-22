@@ -43,7 +43,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `dbcam`.`Cameras` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `active` TINYINT(1) NOT NULL,
+  `active` INT NOT NULL,
   `created` DATE NOT NULL,
   `loc` VARCHAR(50) NOT NULL,
   `url` VARCHAR(100) NULL,

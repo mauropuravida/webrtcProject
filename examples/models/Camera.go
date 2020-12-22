@@ -6,7 +6,7 @@ import ("time"
 type Camera struct{
 	ID int
 	User_id int
-	Active bool
+	Active int
 	Url string
 	Created time.Time
 	Loc string

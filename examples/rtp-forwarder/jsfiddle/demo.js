@@ -5,7 +5,7 @@ var host = "http://localhost"
 
 var pcMap = new Map()
 var xhrMap = new Map()
-var currentUser=1;
+var currentUser=0;
 
 
 function addCamera(url, description, camId, active) {
@@ -48,7 +48,7 @@ function addCamera(url, description, camId, active) {
     var cell32 = row.insertCell(3);
     var element32 = document.createElement("p");
     
-    if (active==1) {
+    if (active == 1) {
         element32.innerHTML = "Connected";
     } else {
         element32.innerHTML = "Disconnected";
@@ -102,7 +102,7 @@ function addCamera(url, description, camId, active) {
     })
 
     document.getElementById("save" + camId).addEventListener('click', function () {
-        let newURL = document.getElementById("description" + camId).value;
+        let newURL = document.getElementById("url" + camId).value;
         let newDesc = document.getElementById("description" + camId).value;
         let status = document.getElementById("status" + camId).innerHTML;
         
@@ -132,11 +132,13 @@ function addCamera(url, description, camId, active) {
             xhrMap.delete(camId)
         }
 
-        deleteCam(camId);
-        insertCam(url, description, 0);
+
+        document.getElementById("status" + camId).innerHTML = "Disconnected";
+      
 
     });
-    
+
+
 }
 
 
@@ -197,6 +199,7 @@ function connectStream(id) {
     xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
     console.log("UDATE ACTIVE TO 1");
     xhr.send(data);
+    document.getElementById("status" + id).innerHTML = "Connected";
 
 
     let rotateAngle = 0;
@@ -312,7 +315,7 @@ function listenPc(id){
     if (event.candidate === null) {
       var localSesion = btoa(JSON.stringify(pc.localDescription));
 
-      var data = "user=mauro&id_camera=1&token="+localSesion;
+      var data = "id_camera="+id+"&token="+localSesion;
       console.log(data);
       getToken(data, id);
     }

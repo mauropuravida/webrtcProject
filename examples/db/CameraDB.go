@@ -37,12 +37,13 @@ func InsertCam(user int, loc string, url string) (int64,error) {
 	fmt.Println(err)
 		return 0,err
 	}
+	defer db.Close()
 
 	return id,nil
 }
 
 func UpdateCam(idCam int, user int, loc string, url string) (int64,error) {
-	query := "UPDATE Cameras SET users_id=?, loc=?, url=? WHERE id_camera=?"
+	query := "UPDATE Cameras SET users_id=?, loc=?, url=? WHERE id=?"
 	db := get()
 	
 	stmt, err := db.Prepare(query)
@@ -68,12 +69,13 @@ func UpdateCam(idCam int, user int, loc string, url string) (int64,error) {
 	}
 	
 	defer stmt.Close()
+	defer db.Close()
 	return id,nil
 }
 
 
-func UpdateActiveCam(act bool, id int) (int64,error) {
-	query := "UPDATE Cameras SET active=? WHERE id_camera=?"
+func UpdateActiveCam(act int, id int) (int64,error) {
+	query := "UPDATE Cameras SET active=? WHERE id=?"
 	db := get()
 	
 	stmt, err := db.Prepare(query)
@@ -99,13 +101,14 @@ func UpdateActiveCam(act bool, id int) (int64,error) {
 	}
 	
 	defer stmt.Close()
+	defer db.Close()
 	return id_cam,nil
 }
 
 
 
 func UpdateTokenCon(idCam int,  token_con string) (int64)  {
-	query := "UPDATE Cameras SET token_session_connection=? WHERE id_camera=?"
+	query := "UPDATE Cameras SET token_session_connection=? WHERE id=?"
 	db := get()
 	
 	stmt, err := db.Prepare(query)
@@ -128,10 +131,11 @@ func UpdateTokenCon(idCam int,  token_con string) (int64)  {
 	}
 	
 	defer stmt.Close()
+	defer db.Close()
 	return id
 }
 func UpdateTokenCam(idCam int,  token_cam string) (int64) {
-	query := "UPDATE Cameras SET token_session_camera=? WHERE id_camera=?"
+	query := "UPDATE Cameras SET token_session_camera=? WHERE id=?"
 	db := get()
 	
 	stmt, err := db.Prepare(query)
@@ -154,6 +158,7 @@ func UpdateTokenCam(idCam int,  token_cam string) (int64) {
 	}
 	
 	defer stmt.Close()
+	defer db.Close()
 	return id
 }
 
@@ -236,5 +241,28 @@ func DeleteCam(idCam int) (sql.Result ,error) {
 	defer db.Close()
 	return rows,nil
 
+}
+
+
+func GetTokenCon(idCam int) (string) {
+	query := "select token_session_connection from cameras where id=?"
+	db := get()
+	stmt, err := db.Prepare(query)
+
+	if err != nil {
+		return ""
+	}
+
+	defer stmt.Close()
+	result, err := stmt.Query(idCam)
+
+	if err != nil {
+		return ""
+	}
+	
+	var token string
+    err = result.Scan(&token)
+	defer db.Close()
+	return token
 
 }

@@ -100,10 +100,16 @@ func serve(addr string) error {
 		token_stream = ""
 		token_connect = ""
 
-		//user := req.Form.Get("user")
-		//id_camera := req.Form.Get("id_camera")
+		id_camera := req.Form.Get("id_camera")
+
+		cam_id, err:= strconv.Atoi(id_camera)
+	
 		token := req.Form.Get("token")
-		//TODO save token in database
+
+		if err==nil{
+			db.UpdateTokenCam(cam_id, token)
+		}
+		 
 
 
 		if token_stream == ""{
@@ -113,7 +119,8 @@ func serve(addr string) error {
 		// await for token_connect
 		endTime := time.Now().Add(time.Second * 61)
 		for time.Now().Before(endTime) { //listening response 
-			//consultar que la base no devuelva vacio 
+			
+			token_connect=db.GetTokenCon(cam_id)
 			if token_connect != "" {
 				tokenResponse := token_connect
 				token_connect = ""
@@ -231,8 +238,7 @@ func serve(addr string) error {
 		// Parses the request body
 		req.ParseForm()
 		idCam := req.Form.Get("id_camera")
-		//fmt.Println("idCam")
-		//fmt.Println(idCam)
+		
 
 		cam_id, err:= strconv.Atoi(idCam)
 		if err == nil {
@@ -258,9 +264,9 @@ func serve(addr string) error {
 		id := req.Form.Get("id_camera")
 		active := req.Form.Get("active")
 		cam_id, err:= strconv.Atoi(id)
-		act, err:= strconv.ParseBool(active)
+		act, err:= strconv.Atoi(active)
 		if err == nil {
-		fmt.Println("YENDO A BASE")
+		
 			db.UpdateActiveCam(act,cam_id)
 		}
 		return
@@ -296,14 +302,14 @@ func serve(addr string) error {
 			cams, err= db.GetCamsByUser(user_id)
 		}
 		if err!=nil {
-			//fmt.Println("ERROR")
-			//fmt.Println(err)
+			fmt.Println("ERROR")
+			fmt.Println(err)
 			return
 		}
 		
 
 		data, _ := json.Marshal(cams)
-		
+		 //fmt.Println(data);
 
 		fmt.Fprintln(w, string(data))
 		

@@ -8,7 +8,7 @@ var xhrMap = new Map()
 var currentUser=1;
 
 
-function addCamera(url, description, camId) {
+function addCamera(url, description, camId, active) {
     
   var table = document.getElementById("cameras");
   var row = table.insertRow();
@@ -41,9 +41,22 @@ function addCamera(url, description, camId) {
   element3.width = 160
   element3.height = 120
   element3.id = "canvas"+camId
-  cell3.appendChild(element3)
+    cell3.appendChild(element3)
 
-  var cell4 = row.insertCell(3);
+
+
+    var cell32 = row.insertCell(3);
+    var element32 = document.createElement("p");
+    
+    if (active==1) {
+        element32.innerHTML = "Connected";
+    } else {
+        element32.innerHTML = "Disconnected";
+    }
+    element32.id = "status" + camId
+    cell32.appendChild(element32);
+
+  var cell4 = row.insertCell(4);
   var element41 = document.createElement("input");
   element41.type="button";
   element41.value = "Modo Gris";
@@ -84,223 +97,213 @@ function addCamera(url, description, camId) {
   var privateCamId = camId
   document.getElementById("ipcamera"+camId).addEventListener('click', function(){ connectStream(privateCamId)})
     document.getElementById("remove" + camId).addEventListener('click', function () {
-        var xhr = new XMLHttpRequest();
-        xhr.withCredentials = true;
-        xhr.open("POST", host + "/deletecamera");
-        data = "id_camera=" + camId;
-        console.log("data: " + data);
-        xhr.setRequestHeader("cache-control", "no-cache");
-        xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-        xhr.send(data);
-        var row = document.getElementById('rowcam' + camId);
-        row.parentNode.removeChild(row);
+        deleteCam(privateCamId);
 
     })
 
     document.getElementById("save" + camId).addEventListener('click', function () {
         let newURL = document.getElementById("description" + camId).value;
         let newDesc = document.getElementById("description" + camId).value;
-        // make like delete+ insert, problems with update (may be an update) 
+        let status = document.getElementById("status" + camId).innerHTML;
+        
+        deleteCam(privateCamId);
+        insertCam(newURL, newDesc, status);
+    
+    });
+
+    document.getElementById('stopStream' + camId).addEventListener('click', function () {
         var xhr = new XMLHttpRequest();
         xhr.withCredentials = true;
-        xhr.open("POST", host + "/deletecamera");
-        data = "id_camera=" + camId;
+        xhr.open("POST", host + "/activecamera");
+        data = "id_camera=" + camId + "&active=" + 0;
         console.log("data: " + data);
         xhr.setRequestHeader("cache-control", "no-cache");
         xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
         xhr.send(data);
-        var row = document.getElementById('rowcam' + camId);
-        row.parentNode.removeChild(row);
 
-        var xhr1 = new XMLHttpRequest();
 
-        xhr1.onload = function () {
-            console.log(this.readyState);
-            if (this.readyState === 4) {
-                //remoteSesion = this.responseText
-                setTimeout(window.startSession(id, this.responseText), 3000);
-                console.log(this.responseText);
-            }
-        };
-        xhr1.open("POST", host + "/addcamera");
-        data = "user=" + currentUser + "&loc=" + newDesc + "&url=" + newURL;
-        console.log("data: " + data);
-        xhr1.setRequestHeader("cache-control", "no-cache");
-        xhr1.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-        xhr1.send(data);
-        //addCamera(newURL, newDesc, );
+        if (pcMap.has(camId))
+            pcMap.get(camId).close()
 
-    })
+
+        if (xhrMap.has(camId)) {
+            console.log("abort " + camId)
+            xhrMap.get(camId).abort()
+            xhrMap.delete(camId)
+        }
+
+        deleteCam(camId);
+        insertCam(url, description, 0);
+
+    });
     
 }
 
 
+function insertCam(newURL, newDesc,status) {
+    var xhr1 = new XMLHttpRequest();
+    xhr1.onload = function () {
+        console.log(this.readyState);
+        if (this.readyState === 4) {
+            addCamera(newURL, newDesc, this.responseText, status);
+        }
+    };
+    xhr1.open("POST", host + "/addcamera");
+    data = "user=" + currentUser + "&loc=" + newDesc + "&url=" + newURL;
+    console.log("data: " + data);
+    xhr1.setRequestHeader("cache-control", "no-cache");
+    xhr1.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    xhr1.send(data);
+}
 
-
-function connectStream(id){
-  console.log("CONECTANDO "+id)
-
-  if (document.getElementById('url'+id).value == ""){
-    console.log("URL no valida")
-    return
-  }
-
-  var myImg = new Image()
-  myImg.src = document.getElementById('url'+id).value
-  myImg.crossOrigin = "Anonymous"
-
-  var canvasClient = document.getElementById('canvas'+id);
-
-  var canvasStream = document.createElement("CANVAS");
-  canvasStream.width = 480
-  canvasStream.height = 360
-
+function deleteCam(camId) {
     var xhr = new XMLHttpRequest();
     xhr.withCredentials = true;
-    xhr.open("POST", host + "/activecamera");
-    data = "id_camera=" + id+"&active=" + false;
+    xhr.open("POST", host + "/deletecamera");
+    data = "id_camera=" + camId;
     console.log("data: " + data);
     xhr.setRequestHeader("cache-control", "no-cache");
     xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
     xhr.send(data);
-
-
-  let rotateAngle = 0;
-  let xrC = canvasClient.width;
-  let yrC = canvasClient.height;
-  let xrS = canvasStream.width;
-  let yrS = canvasStream.height;
-  function rotate(){
-    rotateAngle = rotateAngle + 90;
-    angle = parseInt(rotateAngle) * Math.PI / 180;
-
-    switch(rotateAngle) {
-      case 90: case 270:
-        yrC = -yrC
-        yrS = -yrS
-        canvasClient.width = 120
-        canvasClient.height = 160
-        break;
-      case 180: case 360:
-        xrC = -xrC
-        xrS = -xrS
-        canvasClient.width = 160
-        canvasClient.height = 120
-
-        if (rotateAngle == 360)
-          rotateAngle = 0
-        break;
-      default:
-        // code block
-      }
-  }
-
-  var rotateStream = document.getElementById('rotateStream'+id)
-  rotateStream.addEventListener('click', rotate, false)
-
-  var transform = false;
-  function changeColorStream(){
-    if(transform)
-      transform = false
-    else
-      transform = true
-  }
-
-  var greyMode = document.getElementById('greyMode'+id)
-  greyMode.addEventListener('click', changeColorStream, false)
-
-  function handlerImg(element, xr, yr){
-    var context = element.getContext("2d");
-
-    context.clearRect(0,0,element.width, element.height);  
-    context.rotate(angle);
-    context.drawImage(myImg, 0, 0, xr, yr);
-
-    //transform grey color
-    if (transform){
-      var imgData = context.getImageData(0, 0, element.width, element.height);
-      var px = imgData.data;
-      for (i = 0; i < imgData.data.length; i += 4) {
-        var grey = px[i] * .3 + px[i+1] * .59 + px[i+2] * .11;
-        px[i] = px[i+1] = px[i+2] = grey;
-      }
-
-      context.putImageData(imgData, 0, 0);
-    }
-  }
-
-  var angle = 0;
-
-   
-
-  (function loop() {
-    if (!this.paused && !this.ended && (!pcMap.has(id) || pcMap.get(id).connectionState != 'closed')) {
-      //draw in canvas client
-      handlerImg(canvasClient, xrC, yrC);
-      //draw in canvas for stream best resolution
-      handlerImg(canvasStream, xrS, yrS);
-    }else{
-      var context = canvasClient.getContext("2d");
-      context.clearRect(0, 0, canvasClient.width, canvasClient.height)
-      pcMap.delete(id)
-      myImg.src = "#"
-      return
-    }
-
-    setTimeout(loop, 1000 / 60); // drawing at 60fps
-  })();
-
-  var stream = canvasStream.captureStream(60)
-
-  pc = new RTCPeerConnection({
-  iceServers: [
-    {
-      urls: 'stun:stun.l.google.com:19302'
-    }
-    ]
-  })
-
-  pcMap.set(id, pc)
-  listenPc(id)
-
-  pc.addStream(stream)
-  pc.createOffer().then(function(d) {
-    pc.setLocalDescription(d)
-  }).catch("error")
-
-  //obtain element
-  var stopStream = document.getElementById('stopStream'+id)
-
-    //stop stream
-    function stop() {
-        var xhr = new XMLHttpRequest();
-        xhr.withCredentials = true;
-        xhr.open("POST", host + "/activecamera");
-        data = "id_camera=" + id+"&active="+false;
-        console.log("data: " + data);
-        xhr.setRequestHeader("cache-control", "no-cache");
-        xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-        xhr.send(data);
-
-     
-    if (pcMap.has(id))
-      pcMap.get(id).close()
-
-
-    if(xhrMap.has(id)){
-      console.log("abort "+id)
-      xhrMap.get(id).abort()
-      xhrMap.delete(id)
-    }
-  }
-
-  stopStream.addEventListener('click', stop, false)
-
-  var remove = document.getElementById('remove'+id)
-
-  remove.addEventListener('click', stop, false)
-
+    var row = document.getElementById('rowcam' + camId);
+    row.parentNode.removeChild(row);
 }
+
+
+function connectStream(id) {
+    console.log("CONECTANDO " + id)
+
+    if (document.getElementById('url' + id).value == "") {
+        console.log("URL no valida")
+        return
+    }
+
+    var myImg = new Image()
+    myImg.src = document.getElementById('url' + id).value
+    myImg.crossOrigin = "Anonymous"
+
+    var canvasClient = document.getElementById('canvas' + id);
+
+    var canvasStream = document.createElement("CANVAS");
+    canvasStream.width = 480
+    canvasStream.height = 360
+
+    var xhr = new XMLHttpRequest();
+    xhr.withCredentials = true;
+    xhr.open("POST", host + "/activecamera");
+    data = "id_camera=" + id + "&active=" + 1;
+    console.log("data: " + data);
+    xhr.setRequestHeader("cache-control", "no-cache");
+    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    console.log("UDATE ACTIVE TO 1");
+    xhr.send(data);
+
+
+    let rotateAngle = 0;
+    let xrC = canvasClient.width;
+    let yrC = canvasClient.height;
+    let xrS = canvasStream.width;
+    let yrS = canvasStream.height;
+    function rotate() {
+        rotateAngle = rotateAngle + 90;
+        angle = parseInt(rotateAngle) * Math.PI / 180;
+
+        switch (rotateAngle) {
+            case 90: case 270:
+                yrC = -yrC
+                yrS = -yrS
+                canvasClient.width = 120
+                canvasClient.height = 160
+                break;
+            case 180: case 360:
+                xrC = -xrC
+                xrS = -xrS
+                canvasClient.width = 160
+                canvasClient.height = 120
+
+                if (rotateAngle == 360)
+                    rotateAngle = 0
+                break;
+            default:
+            // code block
+        }
+    }
+
+    var rotateStream = document.getElementById('rotateStream' + id)
+    rotateStream.addEventListener('click', rotate, false)
+
+    var transform = false;
+    function changeColorStream() {
+        if (transform)
+            transform = false
+        else
+            transform = true
+    }
+
+    var greyMode = document.getElementById('greyMode' + id)
+    greyMode.addEventListener('click', changeColorStream, false)
+
+    function handlerImg(element, xr, yr) {
+        var context = element.getContext("2d");
+
+        context.clearRect(0, 0, element.width, element.height);
+        context.rotate(angle);
+        context.drawImage(myImg, 0, 0, xr, yr);
+
+        //transform grey color
+        if (transform) {
+            var imgData = context.getImageData(0, 0, element.width, element.height);
+            var px = imgData.data;
+            for (i = 0; i < imgData.data.length; i += 4) {
+                var grey = px[i] * .3 + px[i + 1] * .59 + px[i + 2] * .11;
+                px[i] = px[i + 1] = px[i + 2] = grey;
+            }
+
+            context.putImageData(imgData, 0, 0);
+        }
+    }
+
+    var angle = 0;
+
+
+
+    (function loop() {
+        if (!this.paused && !this.ended && (!pcMap.has(id) || pcMap.get(id).connectionState != 'closed')) {
+            //draw in canvas client
+            handlerImg(canvasClient, xrC, yrC);
+            //draw in canvas for stream best resolution
+            handlerImg(canvasStream, xrS, yrS);
+        } else {
+            var context = canvasClient.getContext("2d");
+            context.clearRect(0, 0, canvasClient.width, canvasClient.height)
+            pcMap.delete(id)
+            myImg.src = "#"
+            return
+        }
+
+        setTimeout(loop, 1000 / 60); // drawing at 60fps
+    })();
+
+    var stream = canvasStream.captureStream(60)
+
+    pc = new RTCPeerConnection({
+        iceServers: [
+            {
+                urls: 'stun:stun.l.google.com:19302'
+            }
+        ]
+    })
+
+    pcMap.set(id, pc)
+    listenPc(id)
+
+    pc.addStream(stream)
+    pc.createOffer().then(function (d) {
+        pc.setLocalDescription(d)
+    }).catch("error")
+
+    
+ }
 
 function listenPc(id){
   var pc = pcMap.get(id)
@@ -350,22 +353,22 @@ function login() {
 
     var xhr = new XMLHttpRequest();
 
-    console.log("User id: "+document.getElementById("user-id").value);
-    //currentUser = document.getElementById("user-id").innerHTML;
-    currentUser = 1;
+    //currentUser = document.getElementById("user-id").value;
+   currentUser = 1;
     xhr.onload = function () {
         console.log(this.readyState);
         if (this.readyState === 4) {
             var data = JSON.parse(this.responseText);
+           
             for (var key in data) {
-                addCamera("", data[key].Loc, data[key].ID, data[key].User_id);
+                addCamera("", data[key].Loc, data[key].ID, data[key].User_id, data[key].Active);
             }
 
         }
     };
 
 
-    data = 'id=1'; // currentUser;
+    data = 'id='+ currentUser;
     xhr.withCredentials = true;
     xhr.open("POST", host + "/getCameras");
     xhr.setRequestHeader("cache-control", "no-cache");

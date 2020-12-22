@@ -146,7 +146,7 @@ func serve(addr string) error {
 		}
 
 
-		fmt.Printf(token_connect)
+		//fmt.Printf(token_connect)
 		return
 	}) 
 
@@ -196,7 +196,7 @@ func serve(addr string) error {
 
 		fmt.Println(err)
 		if err == nil {
-			fmt.Println("A BASE")
+			//fmt.Println("A BASE")
 			idcam,err=db.InsertCam(user_id,loc, url)
 		}
 
@@ -216,7 +216,7 @@ func serve(addr string) error {
 		idCam := req.Form.Get("id_camera")
 		url:= req.Form.Get("url")
 
-		fmt.Println(loc);
+		//fmt.Println(loc);
 		user_id, err:= strconv.Atoi(user)
 		cam_id, err:= strconv.Atoi(idCam)
 		if err == nil {
@@ -231,8 +231,8 @@ func serve(addr string) error {
 		// Parses the request body
 		req.ParseForm()
 		idCam := req.Form.Get("id_camera")
-		fmt.Println("idCam")
-		fmt.Println(idCam)
+		//fmt.Println("idCam")
+		//fmt.Println(idCam)
 
 		cam_id, err:= strconv.Atoi(idCam)
 		if err == nil {
@@ -240,12 +240,12 @@ func serve(addr string) error {
 		}
 
 		if err != nil {
-		fmt.Println("Error: ")
-		fmt.Println(err)
+		//fmt.Println("Error: ")
+		//fmt.Println(err)
 			
 		}
 			
-		fmt.Printf("idcam: "+idCam)
+		//fmt.Printf("idcam: "+idCam)
 
 		return
 		
@@ -258,8 +258,10 @@ func serve(addr string) error {
 		id := req.Form.Get("id_camera")
 		active := req.Form.Get("active")
 		cam_id, err:= strconv.Atoi(id)
+		act, err:= strconv.ParseBool(active)
 		if err == nil {
-			db.UpdateActiveCam(active,cam_id)
+		fmt.Println("YENDO A BASE")
+			db.UpdateActiveCam(act,cam_id)
 		}
 		return
 		
@@ -269,10 +271,10 @@ func serve(addr string) error {
 	http.HandleFunc("/login", func(w http.ResponseWriter, req *http.Request) {
 		// Parses the request body
 		req.ParseForm()
-		email := req.Form.Get("email")
-		loc := req.Form.Get("password")
+		//email := req.Form.Get("email")
+		//loc := req.Form.Get("password")
 
-		fmt.Printf(email+" "+loc)
+		//fmt.Printf(email+" "+loc)
 		return
 	})
 
@@ -294,8 +296,8 @@ func serve(addr string) error {
 			cams, err= db.GetCamsByUser(user_id)
 		}
 		if err!=nil {
-			fmt.Println("ERROR")
-			fmt.Println(err)
+			//fmt.Println("ERROR")
+			//fmt.Println(err)
 			return
 		}
 		
@@ -329,7 +331,7 @@ func serve(addr string) error {
 			}
 			r := bufio.NewReader(stdout)
 			line, _, _ := r.ReadLine()
-			fmt.Println(string(line))
+			//fmt.Println(string(line))
 			num = num + 1
 			if num == 3 {
 				fmt.Fprintln(w,"e"+string(line))

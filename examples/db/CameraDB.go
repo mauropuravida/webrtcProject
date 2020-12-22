@@ -84,7 +84,7 @@ func UpdateActiveCam(act bool, id int) (int64,error) {
 		return 0,err
 	}
 
-	result, err := stmt.Exec(id, act)
+	result, err := stmt.Exec(act,id)
 	if err != nil {
 	fmt.Println("error2")
 	fmt.Println(err)	

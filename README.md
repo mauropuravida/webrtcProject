@@ -3,6 +3,18 @@
 ## Requirements
 **Install go**
 - Install go 1.15 https://tecadmin.net/install-go-on-linuxmint/
+- Install docker
+- Pull this image:
+    ```bash
+        docker pull mysql
+    ```
+- Execute: 
+    ```bash
+        docker run -d -p 3306:3306 --name dbcam -e MYSQL_ROOT_PASSWORD=secret mysql
+    ```
+	If you can’t use this port, you can change it and change in /examples/db/Connection.go the information about connection.
+- Create the schema using the script in examples/db/dbCam.sql
+
 
 **Import env vars**
     ```bash

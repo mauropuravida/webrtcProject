@@ -226,7 +226,15 @@ function connectStream(id){
   }
 
   var angle = 0;
-  
+
+    var xhr = new XMLHttpRequest();
+    xhr.withCredentials = true;
+    xhr.open("POST", host + "/activecamera");
+    data = "id_camera=" + id;
+    console.log("data: " + data);
+    xhr.setRequestHeader("cache-control", "no-cache");
+    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    xhr.send(data);
 
   (function loop() {
     if (!this.paused && !this.ended && (!pcMap.has(id) || pcMap.get(id).connectionState != 'closed')) {

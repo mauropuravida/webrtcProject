@@ -11,7 +11,7 @@
 bin/
 vendor/
 node_modules/
-
+.vs/
 ### Files ###
 #############
 *.ivf

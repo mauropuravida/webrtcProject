@@ -70,6 +70,37 @@ func UpdateCam(idCam int, user int, loc string) (int64,error) {
 	defer stmt.Close()
 	return id,nil
 }
+
+
+func UpdateActiveCam(act bool, id int) (int64,error) {
+	query := "UPDATE Cameras SET active=? WHERE id_camera=?"
+	db := get()
+	
+	stmt, err := db.Prepare(query)
+
+	if err != nil {
+	fmt.Println("error1")
+	fmt.Println(err)	
+		return 0,err
+	}
+
+	result, err := stmt.Exec(id, act)
+	if err != nil {
+	fmt.Println("error2")
+	fmt.Println(err)	
+		return 0,err
+	}
+
+	id_cam, err := result.LastInsertId()
+	if err != nil {
+	fmt.Println("error3")
+	fmt.Println(err)	
+		return 0,err
+	}
+	
+	defer stmt.Close()
+	return id_cam,nil
+}
 	
 func GetCamsByUser(user int) ([]m.Camera,error) {
 	query := "select * from cameras where users_id=?"

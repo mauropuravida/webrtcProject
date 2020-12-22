@@ -235,10 +235,11 @@ func serve(addr string) error {
 	http.HandleFunc("/activecamera", func(w http.ResponseWriter, req *http.Request) {
 		// Parses the request body
 		req.ParseForm()
-		user := req.Form.Get("user")
-		loc := req.Form.Get("id_camera")
-
-		fmt.Printf(user+" "+loc)
+		id := req.Form.Get("id_camera")
+		cam_id, err:= strconv.Atoi(id)
+		if err == nil {
+			db.UpdateActiveCam(true,cam_id)
+		}
 		return
 		//TODO active/desactive camera in DB
 	})

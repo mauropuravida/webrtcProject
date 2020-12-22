@@ -10,26 +10,64 @@ import ("time"
 
 
 func InsertCam(user int, loc string) (int64,error) {
-	query := "INSERT INTO Cameras(user, active, created, loc, token_session_camera, token_session_consumer, id_camera) VALUES (?,?,?,?,?,?,?)"
+	
+	query := "INSERT INTO Cameras(users_id, active, created, loc, token_session_camera, token_session_consumer, id_camera) VALUES (?,?,?,?,?,?,?)"
+	fmt.Println("INSERTANDO")
 	db := get()
 	
 	stmt, err := db.Prepare(query)
 
 	if err != nil {
+	fmt.Println("error1")
+	fmt.Println(err)
 		return 0,err
 	}
 
 	defer stmt.Close()
 	result, err := stmt.Exec(user, false, time.Now() , loc , " ", " " , 0)
 	if err != nil {
+	fmt.Println("error2")
+	fmt.Println(err)
 		return 0,err
 	}
 
 	id, err := result.LastInsertId()
 	if err != nil {
+	fmt.Println("error3")
+	fmt.Println(err)
 		return 0,err
 	}
 
+	return id,nil
+}
+
+func UpdateCam(idCam int, user int, loc string) (int64,error) {
+	query := "UPDATE Cameras SET users_id=?, loc=? WHERE id_camera=?"
+	db := get()
+	
+	stmt, err := db.Prepare(query)
+
+	if err != nil {
+	fmt.Println("error1")
+	fmt.Println(err)	
+		return 0,err
+	}
+
+	result, err := stmt.Exec(user, loc ,idCam)
+	if err != nil {
+	fmt.Println("error2")
+	fmt.Println(err)	
+		return 0,err
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+	fmt.Println("error3")
+	fmt.Println(err)	
+		return 0,err
+	}
+	
+	defer stmt.Close()
 	return id,nil
 }
 	

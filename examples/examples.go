@@ -171,12 +171,35 @@ func serve(addr string) error {
 		req.ParseForm()
 		user := req.Form.Get("user")
 		loc := req.Form.Get("loc")
-
-		fmt.Printf(user+" "+loc)
-
+		var idcam int64
+		
 		user_id, err:= strconv.Atoi(user)
 		if err == nil {
-			db.InsertCam(user_id,loc)
+			idcam,err=db.InsertCam(user_id,loc)
+		}
+
+		
+		
+		fmt.Fprintln(w, idcam)
+		return
+		
+	})
+
+	//update camera
+	http.HandleFunc("/updatecamera", func(w http.ResponseWriter, req *http.Request) {
+		// Parses the request body
+		req.ParseForm()
+		user := req.Form.Get("user")
+		loc := req.Form.Get("loc")
+		idCam := req.Form.Get("id_camera")
+
+		fmt.Println("AUPDATE");
+		fmt.Println(loc);
+		user_id, err:= strconv.Atoi(user)
+		cam_id, err:= strconv.Atoi(idCam)
+		if err == nil {
+		fmt.Println("abase")
+			db.UpdateCam(cam_id,user_id,loc)
 		}
 		return
 		

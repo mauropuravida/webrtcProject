@@ -2,7 +2,7 @@ package db
 import ("time"
 	
 	"database/sql"
-	 m "project/webrtcProject/examples/models"
+	 m "models"
 	 "fmt"
 )
 

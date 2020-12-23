@@ -1,15 +1,17 @@
 <h2>CAMARAS</h2>
-<label>User id:</label>
-<input type='text' id='user-id' />
+<br>
 
+<label><b>User id</b></label>
+<input type='text' id='user-id' />
 <input id='btn-login' type='button' value='Login' onclick="login()" />
+<br><br>
+
 <table id='cameras'>
     <tr>
-        <th>URL</th>
-        <th>Descripcion</th>
-        <th>Stream</th>
-        <th>Status</th>
-        <th><input id='addCamera' type='button' value='Agregar Camara' onclick="addCamera('','',0,false)" /></th>
+        <th class="thhead">URL</th>
+        <th class="thhead">Descripcion</th>
+        <th class="stream">Stream</th>
+        <th class="addcamera"><input id='addCamera' type='button' value='Agregar Camara' onclick="addCamera('','',0,false)" /></th>
     </tr>
 </table>
 

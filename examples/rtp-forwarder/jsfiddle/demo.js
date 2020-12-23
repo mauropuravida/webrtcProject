@@ -41,22 +41,9 @@ function addCamera(url, description, camId, active) {
   element3.width = 160
   element3.height = 120
   element3.id = "canvas"+camId
-    cell3.appendChild(element3)
+  cell3.appendChild(element3)
 
-
-
-    var cell32 = row.insertCell(3);
-    var element32 = document.createElement("p");
-    
-    if (active==1) {
-        element32.innerHTML = "Connected";
-    } else {
-        element32.innerHTML = "Disconnected";
-    }
-    element32.id = "status" + camId
-    cell32.appendChild(element32);
-
-  var cell4 = row.insertCell(4);
+  var cell4 = row.insertCell(3);
   var element41 = document.createElement("input");
   element41.type="button";
   element41.value = "Modo Gris";
@@ -104,7 +91,6 @@ function addCamera(url, description, camId, active) {
     document.getElementById("save" + camId).addEventListener('click', function () {
         let newURL = document.getElementById("description" + camId).value;
         let newDesc = document.getElementById("description" + camId).value;
-        let status = document.getElementById("status" + camId).innerHTML;
         
         deleteCam(privateCamId);
         insertCam(newURL, newDesc, status);
@@ -131,10 +117,6 @@ function addCamera(url, description, camId, active) {
             xhrMap.get(camId).abort()
             xhrMap.delete(camId)
         }
-
-        deleteCam(camId);
-        insertCam(url, description, 0);
-
     });
     
 }
@@ -333,8 +315,8 @@ function getToken(data, id){
     }
   };
   xhr.ontimeout = function(e){
-      console.log("time lost");
-      getToken("");
+    console.log("time lost");
+    getToken("");
   }
   // await one minute for response   
     //primero
@@ -347,11 +329,11 @@ function getToken(data, id){
   xhr.send(data);
 }
 
-
-
 function login() {
+  var xhr = new XMLHttpRequest();
 
-    var xhr = new XMLHttpRequest();
+  currentUser = document.getElementById("user-id").value;
+  //currentUser = 1;
 
     //currentUser = document.getElementById("user-id").value;
    currentUser = 1;

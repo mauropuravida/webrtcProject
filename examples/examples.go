@@ -14,11 +14,9 @@ import (
 	"strings"
 	"bufio"
 	"time"
-	"project/webrtcProject/examples/db"
+	"db"
 	"strconv"
-	"project/webrtcProject/examples/models"
-
-
+	"models"
 )
 
 const (
@@ -190,6 +188,7 @@ func serve(addr string) error {
 		user := req.Form.Get("user")
 		loc := req.Form.Get("loc")
 		url := req.Form.Get("url")
+		fmt.Println(user+", "+loc+", "+url)
 		var idcam int64
 		
 		user_id, err:= strconv.Atoi(user)
@@ -198,6 +197,12 @@ func serve(addr string) error {
 		if err == nil {
 			//fmt.Println("A BASE")
 			idcam,err=db.InsertCam(user_id,loc, url)
+
+			if err != nil {
+				w.WriteHeader(http.StatusNotFound)
+				fmt.Fprintln(w, "Cam not saved")
+				return
+			}
 		}
 
 		
@@ -296,8 +301,8 @@ func serve(addr string) error {
 			cams, err= db.GetCamsByUser(user_id)
 		}
 		if err!=nil {
-			//fmt.Println("ERROR")
-			//fmt.Println(err)
+			fmt.Println("ERROR")
+			fmt.Println(err)
 			return
 		}
 		

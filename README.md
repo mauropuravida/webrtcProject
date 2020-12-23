@@ -8,18 +8,28 @@
     ```bash
         docker pull mysql
     ```
-- Execute: 
+- Create and run container: 
     ```bash
         docker run -d -p 3306:3306 --name dbcam -e MYSQL_ROOT_PASSWORD=secret mysql
     ```
-	If you can’t use this port, you can change it and change in /examples/db/Connection.go the information about connection.
-- Create the schema using the script in examples/db/dbCam.sql
+	If you cant use this port, you can change it and change in /examples/db/Connection.go the information about connection.
+
+- Enter the container. Use default password "secret"
+    ```bash
+        docker exec -it dbcam mysql -p
+    ```
+
+- Create the schema using the script in examples/db/dbCam.sql. Copy this file content inside the container.
+
 
 
 **Import env vars**
     ```bash
         export GOROOT=/usr/local/go ; export GOPATH=$HOME/Apps/app1 ; export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
     ```
+
+**Import new packages**
+    Copy ../webrtcProject/examples/db and ../webrtcProject/examples/models in /usr/local/go/src folder.
 
 **Note:** This project use port 80 and 443
 

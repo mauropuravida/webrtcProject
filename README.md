@@ -14,7 +14,7 @@
     ```
 	If you cant use this port, you can change it and change in /examples/db/Connection.go the information about connection.
 
-- Enter the container. Use default password "secret"
+- Enter the container. Use password "secret"
     ```bash
         docker exec -it dbcam mysql -p
     ```

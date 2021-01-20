@@ -5,10 +5,15 @@ var host = "http://localhost"
 
 var pcMap = new Map()
 var xhrMap = new Map()
-var currentUser=1;
+var currentUser=document.getElementById("user-id").innerHTML;
+var camId;
+if (currentUser!="")
+    getNextCamIdByUser(currentUser, camId);
+else camId=1;
 
 
-function addCamera(url, description, camId, active) {
+
+function addCamera(url, description, active, camId) {
     
   var table = document.getElementById("cameras");
   var row = table.insertRow();
@@ -89,11 +94,11 @@ function addCamera(url, description, camId, active) {
     })
 
     document.getElementById("save" + camId).addEventListener('click', function () {
-        let newURL = document.getElementById("description" + camId).value;
+        let newURL = document.getElementById("url" + camId).value;
         let newDesc = document.getElementById("description" + camId).value;
         
         deleteCam(privateCamId);
-        insertCam(newURL, newDesc, status);
+        insertCam(newURL, newDesc, active);
     
     });
 
@@ -118,11 +123,13 @@ function addCamera(url, description, camId, active) {
             xhrMap.delete(camId)
         }
     });
-    
+ 
+   
 }
 
 
 function insertCam(newURL, newDesc,status) {
+    console.log("insertando");
     var xhr1 = new XMLHttpRequest();
     xhr1.onload = function () {
         console.log(this.readyState);
@@ -131,18 +138,20 @@ function insertCam(newURL, newDesc,status) {
         }
     };
     xhr1.open("POST", host + "/addcamera");
-    data = "user=" + currentUser + "&loc=" + newDesc + "&url=" + newURL;
+    data = "user=" + currentUser + "&loc=" + newDesc + "&url=" + newURL+"&idcam="+ camId;
     console.log("data: " + data);
     xhr1.setRequestHeader("cache-control", "no-cache");
     xhr1.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
     xhr1.send(data);
+    camId++;
 }
 
 function deleteCam(camId) {
+    console.log("eliminando");
     var xhr = new XMLHttpRequest();
     xhr.withCredentials = true;
     xhr.open("POST", host + "/deletecamera");
-    data = "id_camera=" + camId;
+    data = "id_camera=" + camId+ "&id_user="+currentUser;
     console.log("data: " + data);
     xhr.setRequestHeader("cache-control", "no-cache");
     xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
@@ -332,19 +341,20 @@ function getToken(data, id){
 function login() {
   var xhr = new XMLHttpRequest();
 
-  currentUser = document.getElementById("user-id").value;
   //currentUser = 1;
-
-    //currentUser = document.getElementById("user-id").value;
-   currentUser = 1;
+  currentUser = document.getElementById("user-id").value;
+  console.log("user id: "+ currentUser);
+  
     xhr.onload = function () {
         console.log(this.readyState);
         if (this.readyState === 4) {
+            console.log(this.responseText);
             var data = JSON.parse(this.responseText);
-           
+            document.getElementById("cameras").innerHTML= " " ;
             for (var key in data) {
-                addCamera("", data[key].Loc, data[key].ID, data[key].User_id, data[key].Active);
+                addCamera("", data[key].Loc,  data[key].User_id, data[key].Active, data);
             }
+            getNextCamIdByUser(currentUser, camId);
 
         }
     };
@@ -357,6 +367,28 @@ function login() {
     xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
     xhr.setRequestHeader('token', 'eltoken');
     xhr.send(data);
+}
+
+function getNextCamIdByUser(currentUser, camId){
+    var xhr = new XMLHttpRequest();
+
+    xhr.onload = function () {
+        console.log(this.readyState);
+        if (this.readyState === 4) {
+            console.log("respuesta para camid:" + this.responseText);
+            camId=this.responseText;
+
+        }
+    };
+    data = 'id='+ currentUser;
+    xhr.withCredentials = true;
+    xhr.open("POST", host + "/getNextCamIdByUser");
+    xhr.setRequestHeader("cache-control", "no-cache");
+    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    xhr.setRequestHeader('token', 'eltoken');
+    xhr.send(data);
+
+    
 }
 
 window.startSession = function(id, remoteSesion) {

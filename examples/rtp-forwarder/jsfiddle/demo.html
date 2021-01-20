@@ -6,12 +6,14 @@
 <input id='btn-login' type='button' value='Login' onclick="login()" />
 <br><br>
 
-<table id='cameras'>
-    <tr>
+<table>
+    <thead>
         <th class="thhead">URL</th>
         <th class="thhead">Descripcion</th>
         <th class="stream">Stream</th>
         <th class="addcamera"><input id='addCamera' type='button' value='Agregar Camara' onclick="addCamera('','',0,false)" /></th>
-    </tr>
+    </thead>
+    <tbody id='cameras'>
+    </tbody>
 </table>
 

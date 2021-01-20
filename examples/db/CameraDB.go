@@ -9,7 +9,7 @@ import ("time"
 
 
 
-func InsertCam(user int, loc string, url string) (int64,error) {
+func InsertCam(user int, loc string, url string, idcam int) (error) {
 	
 	query := "INSERT INTO Cameras(users_id, active, created, loc, url, token_session_camera, token_session_consumer, id_camera) VALUES (?,?,?,?,?,?,?,?)"
 	fmt.Println("INSERTANDO")
@@ -20,29 +20,30 @@ func InsertCam(user int, loc string, url string) (int64,error) {
 	if err != nil {
 	fmt.Println("error1")
 	fmt.Println(err)
-		return 0,err
+		return err
 	}
 
 	defer stmt.Close()
-	result, err := stmt.Exec(user, false, time.Now() , loc , url, " ", " " , 0)
+	result, err := stmt.Exec(user, false, time.Now() , loc , url, " ", " " , idcam)
 	if err != nil {
 	fmt.Println("error2")
 	fmt.Println(err)
-		return 0,err
+		return err
 	}
 
-	id, err := result.LastInsertId()
+	_, err = result.LastInsertId()
 	if err != nil {
 	fmt.Println("error3")
-	fmt.Println(err)
-		return 0,err
+	fmt.Println(err)	
+		return err
 	}
 
-	return id,nil
+
+	return nil
 }
 
 func UpdateCam(idCam int, user int, loc string, url string) (int64,error) {
-	query := "UPDATE Cameras SET users_id=?, loc=?, url=? WHERE id_camera=?"
+	query := "UPDATE Cameras SET users_id=?, loc=?, url=? WHERE id_camera=? and users_id=?"
 	db := get()
 	
 	stmt, err := db.Prepare(query)
@@ -160,7 +161,7 @@ func UpdateTokenCam(idCam int,  token_cam string) (int64) {
 
 	
 func GetCamsByUser(user int) ([]m.Camera,error) {
-	query := "select * from cameras where users_id=?"
+	query := "SELECT * FROM Cameras WHERE users_id=?"
 	db := get()
 	cams := make([]m.Camera, 0)
 	stmt, err := db.Prepare(query)
@@ -194,7 +195,7 @@ func GetCamsByUser(user int) ([]m.Camera,error) {
 
 	
 func GetTokenCam(idcam int) (string) {
-	query := "select token_session_camera from cameras where id=?"
+	query := "select token_session_camera from Cameras where id=?"
 	db := get()
 	stmt, err := db.Prepare(query)
 
@@ -215,26 +216,65 @@ func GetTokenCam(idcam int) (string) {
 	return token
 }
 
-func DeleteCam(idCam int) (sql.Result ,error) {
-	query := "DELETE FROM Cameras WHERE  id=?"
+func DeleteCam(idCam int, idUser int) (sql.Result ,error) {
+	query := "DELETE FROM Cameras WHERE id_camera=? and users_id=?"
 	
 	db := get()
 
 
 	stmt, err := db.Prepare(query)
 	if err != nil {
+		fmt.Println("error1")
+		fmt.Println(err)
 		return  nil, err
 	}
 
 	defer stmt.Close()
 
-	rows, err :=stmt.Exec(idCam)
+	rows, err :=stmt.Exec(idCam, idUser)
 
 	if err != nil {
+		fmt.Println("error2")
+		fmt.Println(err)
 		return nil, err
 	}
 	defer db.Close()
 	return rows,nil
 
+
+}
+
+
+func GetNextCamIdByUser(currentUser int) (int, error){
+	query := "SELECT id_camera FROM Cameras c WHERE users_id=? ORDER BY id_camera DESC LIMIT 1"
+	
+	db := get()
+
+
+	stmt, err := db.Prepare(query)
+	if err != nil {
+		fmt.Println("error1")
+		fmt.Println(err)
+		return  0, err
+	}
+
+	
+
+	row, err :=stmt.Query(currentUser)
+	defer stmt.Close()
+	if err != nil {
+		fmt.Println("error2")
+		fmt.Println(err)
+		return 0, err
+	}
+	defer db.Close()
+
+	fmt.Printf("row: ")
+	fmt.Println(row)
+	var out int 
+	err = row.Scan(&out)
+	out = out + 1
+	
+	return out ,nil
 
 }

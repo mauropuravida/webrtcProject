@@ -188,15 +188,23 @@ func serve(addr string) error {
 		user := req.Form.Get("user")
 		loc := req.Form.Get("loc")
 		url := req.Form.Get("url")
-		fmt.Println(user+", "+loc+", "+url)
-		var idcam int64
+		idcam := req.Form.Get("idcam")
 		
+
+		fmt.Println("antes de atoi")
 		user_id, err:= strconv.Atoi(user)
 
+		cam_id, err :=  strconv.Atoi(idcam)
+		
+		fmt.Println("despues de atoi")
+
+		fmt.Println("el error")
+
 		fmt.Println(err)
+
 		if err == nil {
-			//fmt.Println("A BASE")
-			idcam,err=db.InsertCam(user_id,loc, url)
+			fmt.Println("A BASE")
+			err=db.InsertCam(user_id,loc, url, cam_id)
 
 			if err != nil {
 				w.WriteHeader(http.StatusNotFound)
@@ -206,8 +214,6 @@ func serve(addr string) error {
 		}
 
 		
-		
-		fmt.Fprintln(w, idcam)
 		return
 		
 	})
@@ -236,12 +242,16 @@ func serve(addr string) error {
 		// Parses the request body
 		req.ParseForm()
 		idCam := req.Form.Get("id_camera")
-		//fmt.Println("idCam")
-		//fmt.Println(idCam)
-
+		idUser := req.Form.Get("id_user")
+		fmt.Printf("idCam: ")
+		fmt.Println(idCam)
+		fmt.Printf("iduser: ")
+		fmt.Println(idUser)
 		cam_id, err:= strconv.Atoi(idCam)
+		usr_id, err:= strconv.Atoi(idUser)
 		if err == nil {
-			db.DeleteCam(cam_id)
+			fmt.Println("yendo a eliminar")
+			db.DeleteCam(cam_id, usr_id)
 		}
 
 		if err != nil {
@@ -291,6 +301,7 @@ func serve(addr string) error {
 		req.ParseForm()		// Parses the request body
 		id := req.Form.Get("id")
 		
+
 		cams := make([]models.Camera, 0)
 		if err!=nil {
 			return
@@ -311,6 +322,36 @@ func serve(addr string) error {
 		
 
 		fmt.Fprintln(w, string(data))
+		
+		return
+	})
+
+
+	//get the next id for cams from an specific user
+	http.HandleFunc("/getNextCamIdByUser", func(w http.ResponseWriter, req *http.Request) {
+		
+		req.ParseForm()		// Parses the request body
+		id := req.Form.Get("id")
+		
+		if err!=nil {
+			return
+		}
+
+		user_id, err:= strconv.Atoi(id)
+
+		var nextId int 
+		if err == nil {
+			nextId, err= db.GetNextCamIdByUser(user_id)
+		}
+		if err!=nil {
+			fmt.Println("ERROR")
+			fmt.Println(err)
+			return
+		}
+
+		fmt.Printf("next id: ")
+		fmt.Println(nextId)
+		fmt.Fprintln(w, nextId)
 		
 		return
 	})
@@ -449,5 +490,7 @@ func getExamples() (*Examples, error) {
 
 	return &examples, nil
 }
+
+
 
 

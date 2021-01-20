@@ -20,7 +20,7 @@ USE `dbcam` ;
 -- -----------------------------------------------------
 -- Table `dbcam`.`users`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `dbcam`.`users` (
+CREATE TABLE IF NOT EXISTS `dbcam`.`Users` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(50) NOT NULL,
   `surname` VARCHAR(50) NOT NULL,
@@ -35,7 +35,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `dbcam`.`cameras`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `dbcam`.`cameras` (
+CREATE TABLE IF NOT EXISTS `dbcam`.`Cameras` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `active` TINYINT(1) NOT NULL,
   `created` DATE NOT NULL,
@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS `dbcam`.`cameras` (
   INDEX `fk_cameras_users_idx` (`users_id` ASC) VISIBLE,
   CONSTRAINT `fk_cameras_users`
     FOREIGN KEY (`users_id`)
-    REFERENCES `dbcam`.`users` (`id`)
+    REFERENCES `dbcam`.`Users` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;

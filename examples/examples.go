@@ -191,19 +191,15 @@ func serve(addr string) error {
 		idcam := req.Form.Get("idcam")
 		
 
-		fmt.Println("antes de atoi")
 		user_id, err:= strconv.Atoi(user)
 
 		cam_id, err :=  strconv.Atoi(idcam)
-		
-		fmt.Println("despues de atoi")
 
-		fmt.Println("el error")
-
-		fmt.Println(err)
+		if err != nil {
+			fmt.Println(err)
+		}
 
 		if err == nil {
-			fmt.Println("A BASE")
 			err=db.InsertCam(user_id,loc, url, cam_id)
 
 			if err != nil {
@@ -212,6 +208,7 @@ func serve(addr string) error {
 				return
 			}
 		}
+		
 
 		
 		return
@@ -243,25 +240,18 @@ func serve(addr string) error {
 		req.ParseForm()
 		idCam := req.Form.Get("id_camera")
 		idUser := req.Form.Get("id_user")
-		fmt.Printf("idCam: ")
-		fmt.Println(idCam)
-		fmt.Printf("iduser: ")
-		fmt.Println(idUser)
+	
 		cam_id, err:= strconv.Atoi(idCam)
 		usr_id, err:= strconv.Atoi(idUser)
+
 		if err == nil {
-			fmt.Println("yendo a eliminar")
 			db.DeleteCam(cam_id, usr_id)
 		}
 
 		if err != nil {
-		//fmt.Println("Error: ")
-		//fmt.Println(err)
-			
+			fmt.Println(err)
 		}
-			
-		//fmt.Printf("idcam: "+idCam)
-
+		
 		return
 		
 	})
@@ -275,7 +265,6 @@ func serve(addr string) error {
 		cam_id, err:= strconv.Atoi(id)
 		act, err:= strconv.ParseBool(active)
 		if err == nil {
-		fmt.Println("YENDO A BASE")
 			db.UpdateActiveCam(act,cam_id)
 		}
 		return
@@ -312,7 +301,6 @@ func serve(addr string) error {
 			cams, err= db.GetCamsByUser(user_id)
 		}
 		if err!=nil {
-			fmt.Println("ERROR")
 			fmt.Println(err)
 			return
 		}
@@ -344,13 +332,9 @@ func serve(addr string) error {
 			nextId, err= db.GetNextCamIdByUser(user_id)
 		}
 		if err!=nil {
-			fmt.Println("ERROR")
 			fmt.Println(err)
 			return
 		}
-
-		fmt.Printf("next id: ")
-		fmt.Println(nextId)
 		fmt.Fprintln(w, nextId)
 		
 		return

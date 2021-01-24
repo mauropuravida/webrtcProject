@@ -163,12 +163,15 @@ func serve(addr string) error {
 		// Parses the request body
 		req.ParseForm()
 		id_camera := req.Form.Get("id_camera")
+		id_user := req.Form.Get("user")
 
 		cam_id, err:= strconv.Atoi(id_camera)
+
+		user_id, err:= strconv.Atoi(id_user)
 		var token_stream string
 
 		if err == nil {
-			token_stream=db.GetTokenCam(cam_id)
+			token_stream=db.GetTokenCam(cam_id, user_id)
 		}
 
 		
@@ -271,6 +274,23 @@ func serve(addr string) error {
 		
 	})
 
+
+	http.HandleFunc("/saveTokenCam", func(w http.ResponseWriter, req *http.Request) {
+		// Parses the request body
+		req.ParseForm()
+		id_cam := req.Form.Get("id")
+		user := req.Form.Get("user")
+		token := req.Form.Get("token")
+		cam_id, err:= strconv.Atoi(id_cam)
+		user_id, err := strconv.Atoi(user) 
+
+		if err == nil {
+			db.UpdateTokenCam(cam_id, user_id, token)
+		}
+		return
+		
+	})
+
 	//Login user
 	http.HandleFunc("/login", func(w http.ResponseWriter, req *http.Request) {
 		// Parses the request body
@@ -336,6 +356,32 @@ func serve(addr string) error {
 			return
 		}
 		fmt.Fprintln(w, nextId)
+		
+		return
+	})
+
+	http.HandleFunc("/getTokenCamFromDB", func(w http.ResponseWriter, req *http.Request) {
+		
+		req.ParseForm()		// Parses the request body
+		id := req.Form.Get("id")
+		user := req.Form.Get("user")
+		
+		if err!=nil {
+			return
+		}
+
+		user_id, err:= strconv.Atoi(user)
+		cam_id, err:= strconv.Atoi(id)
+
+		var token string 
+		if err == nil {
+			token= db.GetTokenCam(cam_id,user_id)
+		}
+		if err!=nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Fprintln(w, token)
 		
 		return
 	})

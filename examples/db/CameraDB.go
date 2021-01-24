@@ -113,8 +113,8 @@ func UpdateTokenCon(idCam int,  token_con string) (int64)  {
 	defer stmt.Close()
 	return id
 }
-func UpdateTokenCam(idCam int,  token_cam string) (int64) {
-	query := "UPDATE Cameras SET token_session_camera=? WHERE id_camera=?"
+func UpdateTokenCam(idCam int, user_id int,  token_cam string) (int64) {
+	query := "UPDATE Cameras SET token_session_camera=? WHERE id_camera=? and users_id=?"
 	db := get()
 	
 	stmt, err := db.Prepare(query)
@@ -124,7 +124,7 @@ func UpdateTokenCam(idCam int,  token_cam string) (int64) {
 		return 0
 	}
 
-	result, err := stmt.Exec(token_cam, idCam)
+	result, err := stmt.Exec(token_cam, idCam, user_id)
 	if err != nil {
 		fmt.Println(err)	
 		return 0
@@ -175,8 +175,8 @@ func GetCamsByUser(user int) ([]m.Camera,error) {
 
 
 	
-func GetTokenCam(idcam int) (string) {
-	query := "select token_session_camera from Cameras where id=?"
+func GetTokenCam(idCam int, idUser int) (string) {
+	query := "SELECT token_session_camera FROM Cameras WHERE id_camera=? AND users_id=?"
 	db := get()
 	stmt, err := db.Prepare(query)
 
@@ -185,7 +185,7 @@ func GetTokenCam(idcam int) (string) {
 	}
 
 	defer stmt.Close()
-	result, err := stmt.Query(idcam)
+	result, err := stmt.Query(idCam, idUser)
 
 	if err != nil {
 		return ""

@@ -2,19 +2,20 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
+	"io/ioutil"
 	"net"
+	"net/http"
+	"net/url"
+	"os"
+	"strconv"
+	"strings"
 	"time"
+
 	"github.com/pion/rtcp"
 	"github.com/pion/webrtc/v3"
 	"github.com/pion/webrtc/v3/examples/internal/signal"
-	"io/ioutil"
-	"flag"
-	"strconv"
-	"net/http"
-	"net/url"
-	"strings"
-	"os"
 )
 
 type udpConn struct {
@@ -22,24 +23,25 @@ type udpConn struct {
 	port int
 }
 
-var(
-	host = ""
+var (
+	host  = ""
 	ipCam = ""
-	)
+)
 
 //Only work in linux
-func createSdp(addr string, videoPort string){
-	data := []byte("v=0\no=- 0 0 IN IP4 "+addr+"\ns=WebRTC "+addr+":"+videoPort+"\nc=IN IP4 "+addr+"\nt=0 0\nm=video "+videoPort+" RTP/AVP 96\na=rtpmap:96 VP8/90000")
-    prefix := addr+"_"+videoPort+"-*.sdp"
-    tmpFile, err := ioutil.TempFile(os.TempDir(), prefix)
-    if err != nil {
-        fmt.Println("Cannot create temporary file", err)
-    }
-    tmpFile.Write(data)
+func createSdp(addr string, videoPort string) {
+	data := []byte("v=0\no=- 0 0 IN IP4 " + addr + "\ns=WebRTC " + addr + ":" + videoPort + "\nc=IN IP4 " + addr + "\nt=0 0\nm=video " + videoPort + " RTP/AVP 96\na=rtpmap:96 VP8/90000")
+	prefix := addr + "_" + videoPort + "-*.sdp"
+	tmpFile, err := ioutil.TempFile(os.TempDir(), prefix)
+	if err != nil {
+		fmt.Println("Cannot create temporary file", err)
+	}
+	tmpFile.Write(data)
 }
 
 func main() {
 	idCam := flag.String("idCam", " ", "Camera identification.")
+	idUser := flag.String("idUser", " ", "Camera identification.")
 	addr := flag.String("address", "127.0.0.200", "Address to host the HTTP server on.")
 	portt := flag.Int("port", 4000, "Address to host the HTTP server on.")
 	hostt := flag.String("host", "http://localhost", "")
@@ -50,7 +52,7 @@ func main() {
 	fmt.Printf("HOST : %s \n", host)
 	fmt.Printf("Listening address %s \n", *addr)
 
-	if *addr == ""{
+	if *addr == "" {
 		fmt.Printf("Empty address %s \n", *addr)
 		return
 	}
@@ -211,32 +213,32 @@ func main() {
 	// Output the answer in base64 so we can paste it in browser
 	fmt.Println(signal.Encode(*peerConnection.LocalDescription()))
 
+	endpoint := host + "/sendtokenconnect"
+	data := url.Values{}
+	data.Set("token", signal.Encode(*peerConnection.LocalDescription()))
+	data.Set("id_camera", idCam)
+	data.Set("id_user", idUser)
 
-    endpoint := host+"/sendtokenconnect"
-    data := url.Values{}
-    data.Set("token", signal.Encode(*peerConnection.LocalDescription()))
-	data.Set("id", idCam )
+	client := &http.Client{}
+	r, err := http.NewRequest("POST", endpoint, strings.NewReader(data.Encode())) // URL-encoded payload
 
-    client := &http.Client{}
-    r, err := http.NewRequest("POST", endpoint, strings.NewReader(data.Encode())) // URL-encoded payload
+	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
 
-    r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-    r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
+	if err != nil {
+		panic(err)
+	}
 
-    if err != nil {
-        panic(err)
-    }
+	res, err := client.Do(r)
+	if err != nil {
+		panic(err)
+	}
 
-    res, err := client.Do(r)
-    if err != nil {
-        panic(err)
-    }
+	defer res.Body.Close()
 
-    defer res.Body.Close()
-
-    if err != nil {
-        panic(err)
-    }
+	if err != nil {
+		panic(err)
+	}
 
 	// Wait for context to be done
 	<-ctx.Done()

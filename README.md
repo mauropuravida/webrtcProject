@@ -60,7 +60,7 @@
 2. Add and connect your IP-CAM
 3. For consume stream use this command:
     ```bash
-        -curl -X GET http://<HOST>/checkstream | .<PATH_TO>/rtp-forwarder --address <ADDRESS> --port <PORT> --host <HOST>
+        curl -X GET http://<HOST>/checkstream | .<PATH_TO>/rtp-forwarder --address <ADDRESS> --port <PORT> --host <HOST>
     ```
 4. Go to the tmp folder and choose the generated .sdp file. Open it with a media player.
 

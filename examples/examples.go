@@ -9,10 +9,8 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
-	"bufio"
 	"time"
 	"db"
 	"strconv"
@@ -162,14 +160,12 @@ func serve(addr string) error {
 	http.HandleFunc("/checkstream", func(w http.ResponseWriter, req *http.Request) {
 		// Parses the request body
 		req.ParseForm()
-		id_camera := req.Form.Get("id_camera")
-		id_user := req.Form.Get("user")
+		id_camera := os.Args[0]
+		//id_user := os.Args[1]
+		fmt.Println(id_camera)
 
-		cam_id, err:= strconv.Atoi(id_camera)
-
-		user_id, err:= strconv.Atoi(id_user)
-		var token_stream string
-
+		//var token_stream string
+/*
 		if err == nil {
 			token_stream=db.GetTokenCam(cam_id, user_id)
 		}
@@ -180,7 +176,7 @@ func serve(addr string) error {
 			return
 		}
 
-		fmt.Fprintln(w, "token not found")
+		fmt.Fprintln(w, "token not found")*/
 		return
 	})
 
@@ -365,7 +361,7 @@ func serve(addr string) error {
 		req.ParseForm()		// Parses the request body
 		id := req.Form.Get("id")
 		user := req.Form.Get("user")
-		
+
 		if err!=nil {
 			return
 		}
@@ -386,37 +382,6 @@ func serve(addr string) error {
 		return
 	})
 
-
-
-	//Generate session token
-	http.HandleFunc("/gentoken", func(w http.ResponseWriter, req *http.Request) {
-
-		req.ParseForm()		// Parses the request body
-		token := req.Form.Get("token") // x will be "" if parameter is not set
-		
-		cmd := exec.Command("/src/github.com/pion/webrtc/examples/rtp-forwarder/jsfiddle/script.sh",token)
-		stdout, _ := cmd.StdoutPipe()
-		cmd.Start()
-		oneByte := make([]byte, 1)
-		num := 1
-		for {
-			_, err := stdout.Read(oneByte)
-			if err != nil {
-				fmt.Printf(err.Error())
-				break
-			}
-			r := bufio.NewReader(stdout)
-			line, _, _ := r.ReadLine()
-			//fmt.Println(string(line))
-			num = num + 1
-			if num == 3 {
-				fmt.Fprintln(w,"e"+string(line))
-				return
-			}
-		}
-		cmd.Wait()
-		return
-	})
 
 	// Serve the required pages
 	// DIY 'mux' to avoid additional dependencies

@@ -1,6 +1,6 @@
 
 /* eslint-env browser */
-var host = "http://localhost"
+var host = "http://localhost:8080"
 //var host = "http://159.65.97.50"
 
 var pcMap = new Map()

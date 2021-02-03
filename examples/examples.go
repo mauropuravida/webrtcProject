@@ -1,25 +1,25 @@
 package main
 
 import (
+	"db"
 	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
 	"html/template"
 	"log"
+	"models"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
-	"db"
-	"strconv"
-	"models"
 )
 
 const (
-    PUBLIC_KEY = "/etc/letsencrypt/live/testingwebrtc.ddns.net/fullchain.pem"
-    PRIV_KEY = "/etc/letsencrypt/live/testingwebrtc.ddns.net/privkey.pem"
+	PUBLIC_KEY = "/etc/letsencrypt/live/testingwebrtc.ddns.net/fullchain.pem"
+	PRIV_KEY   = "/etc/letsencrypt/live/testingwebrtc.ddns.net/privkey.pem"
 )
 
 // Examples represents the examples loaded from examples.json.
@@ -28,8 +28,8 @@ type Examples []*Example
 var (
 	errListExamples  = errors.New("failed to list examples (please run in the examples folder)")
 	errParseExamples = errors.New("failed to parse examples")
-	token_stream = ""
-	token_connect = ""
+	token_stream     = ""
+	token_connect    = ""
 )
 
 // Example represents an example loaded from examples.json.
@@ -44,30 +44,30 @@ type Example struct {
 
 //redirect request poty 80 to port 443
 func redirect(w http.ResponseWriter, req *http.Request) {
- // remove/add not default ports from req.Host
-    target := "https://" + req.Host + req.URL.Path
-    if len(req.URL.RawQuery) > 0 {
-        target += "?" + req.URL.RawQuery
-    }
-    log.Printf("redirect to: %s", target)
-    http.Redirect(w, req, target,
-        http.StatusTemporaryRedirect)
+	// remove/add not default ports from req.Host
+	target := "https://" + req.Host + req.URL.Path
+	if len(req.URL.RawQuery) > 0 {
+		target += "?" + req.URL.RawQuery
+	}
+	log.Printf("redirect to: %s", target)
+	http.Redirect(w, req, target,
+		http.StatusTemporaryRedirect)
 }
 
 //redirect request poty 443 to port 80
 func redirect443to80(w http.ResponseWriter, req *http.Request) {
- // remove/add not default ports from req.Host
-    target := "http://" + req.Host + req.URL.Path
-    if len(req.URL.RawQuery) > 0 {
-        target += "?" + req.URL.RawQuery
-    }
-    log.Printf("redirect to: %s", target)
-    http.Redirect(w, req, target,
-        http.StatusTemporaryRedirect)
+	// remove/add not default ports from req.Host
+	target := "http://" + req.Host + req.URL.Path
+	if len(req.URL.RawQuery) > 0 {
+		target += "?" + req.URL.RawQuery
+	}
+	log.Printf("redirect to: %s", target)
+	http.Redirect(w, req, target,
+		http.StatusTemporaryRedirect)
 }
 
 func main() {
-	addr := flag.String("address", ":80", "Address to host the HTTP server on.")
+	addr := flag.String("address", ":8080", "Address to host the HTTP server on.")
 	flag.Parse()
 
 	log.Println("Listening on", *addr)
@@ -101,15 +101,14 @@ func serve(addr string) error {
 		token := req.Form.Get("token")
 		//TODO save token in database
 
-
-		if token_stream == ""{
+		if token_stream == "" {
 			token_stream = token
 		}
 
 		// await for token_connect
 		endTime := time.Now().Add(time.Second * 61)
-		for time.Now().Before(endTime) { //listening response 
-			//consultar que la base no devuelva vacio 
+		for time.Now().Before(endTime) { //listening response
+			//consultar que la base no devuelva vacio
 			if token_connect != "" {
 				tokenResponse := token_connect
 				token_connect = ""
@@ -128,23 +127,20 @@ func serve(addr string) error {
 		req.ParseForm()
 		token_connect := req.Form.Get("token")
 		id := req.Form.Get("id_camera")
-		cam_id, err:= strconv.Atoi(id)
-		
-		
+		cam_id, err := strconv.Atoi(id)
+
 		if err == nil {
 			db.UpdateTokenCon(cam_id, token_connect)
 		}
-				
-		
-		if token_connect != ""{
-			fmt.Fprintln(w,token_connect)
+
+		if token_connect != "" {
+			fmt.Fprintln(w, token_connect)
 			return
 		}
 
-
 		//fmt.Printf(token_connect)
 		return
-	}) 
+	})
 
 	//Delete vars only for *testing*
 	http.HandleFunc("/reset", func(w http.ResponseWriter, req *http.Request) {
@@ -155,28 +151,26 @@ func serve(addr string) error {
 		return
 	})
 
-
 	//Check if exists stream from user and id_camera
 	http.HandleFunc("/checkstream", func(w http.ResponseWriter, req *http.Request) {
-		// Parses the request body
 		req.ParseForm()
-		id_camera := os.Args[0]
-		//id_user := os.Args[1]
-		fmt.Println(id_camera)
+		idCam := req.Form.Get("cam")
+		user := req.Form.Get("user")
+		fmt.Println(idCam)
+		fmt.Println(user)
 
-		//var token_stream string
-/*
+		var token_stream string
+
 		if err == nil {
-			token_stream=db.GetTokenCam(cam_id, user_id)
+			token_stream = db.GetTokenCam(4, 1)
 		}
 
-		
-		if token_stream != ""{
+		if token_stream != "" {
 			fmt.Fprintln(w, token_stream)
 			return
 		}
 
-		fmt.Fprintln(w, "token not found")*/
+		fmt.Fprintln(w, "token not found")
 		return
 	})
 
@@ -188,18 +182,17 @@ func serve(addr string) error {
 		loc := req.Form.Get("loc")
 		url := req.Form.Get("url")
 		idcam := req.Form.Get("idcam")
-		
 
-		user_id, err:= strconv.Atoi(user)
+		user_id, err := strconv.Atoi(user)
 
-		cam_id, err :=  strconv.Atoi(idcam)
+		cam_id, err := strconv.Atoi(idcam)
 
 		if err != nil {
 			fmt.Println(err)
 		}
 
 		if err == nil {
-			err=db.InsertCam(user_id,loc, url, cam_id)
+			err = db.InsertCam(user_id, loc, url, cam_id)
 
 			if err != nil {
 				w.WriteHeader(http.StatusNotFound)
@@ -207,11 +200,9 @@ func serve(addr string) error {
 				return
 			}
 		}
-		
 
-		
 		return
-		
+
 	})
 
 	//update camera
@@ -221,16 +212,16 @@ func serve(addr string) error {
 		user := req.Form.Get("user")
 		loc := req.Form.Get("loc")
 		idCam := req.Form.Get("id_camera")
-		url:= req.Form.Get("url")
+		url := req.Form.Get("url")
 
 		//fmt.Println(loc);
-		user_id, err:= strconv.Atoi(user)
-		cam_id, err:= strconv.Atoi(idCam)
+		user_id, err := strconv.Atoi(user)
+		cam_id, err := strconv.Atoi(idCam)
 		if err == nil {
-			db.UpdateCam(cam_id,user_id,loc, url)
+			db.UpdateCam(cam_id, user_id, loc, url)
 		}
 		return
-		
+
 	})
 
 	//Delete camera
@@ -239,9 +230,9 @@ func serve(addr string) error {
 		req.ParseForm()
 		idCam := req.Form.Get("id_camera")
 		idUser := req.Form.Get("id_user")
-	
-		cam_id, err:= strconv.Atoi(idCam)
-		usr_id, err:= strconv.Atoi(idUser)
+
+		cam_id, err := strconv.Atoi(idCam)
+		usr_id, err := strconv.Atoi(idUser)
 
 		if err == nil {
 			db.DeleteCam(cam_id, usr_id)
@@ -250,9 +241,9 @@ func serve(addr string) error {
 		if err != nil {
 			fmt.Println(err)
 		}
-		
+
 		return
-		
+
 	})
 
 	//Active/desactive camera
@@ -261,15 +252,14 @@ func serve(addr string) error {
 		req.ParseForm()
 		id := req.Form.Get("id_camera")
 		active := req.Form.Get("active")
-		cam_id, err:= strconv.Atoi(id)
-		act, err:= strconv.ParseBool(active)
+		cam_id, err := strconv.Atoi(id)
+		act, err := strconv.ParseBool(active)
 		if err == nil {
-			db.UpdateActiveCam(act,cam_id)
+			db.UpdateActiveCam(act, cam_id)
 		}
 		return
-		
-	})
 
+	})
 
 	http.HandleFunc("/saveTokenCam", func(w http.ResponseWriter, req *http.Request) {
 		// Parses the request body
@@ -277,14 +267,14 @@ func serve(addr string) error {
 		id_cam := req.Form.Get("id")
 		user := req.Form.Get("user")
 		token := req.Form.Get("token")
-		cam_id, err:= strconv.Atoi(id_cam)
-		user_id, err := strconv.Atoi(user) 
+		cam_id, err := strconv.Atoi(id_cam)
+		user_id, err := strconv.Atoi(user)
 
 		if err == nil {
 			db.UpdateTokenCam(cam_id, user_id, token)
 		}
 		return
-		
+
 	})
 
 	//Login user
@@ -298,90 +288,83 @@ func serve(addr string) error {
 		return
 	})
 
-
-
-	// get cams from user 
+	// get cams from user
 	http.HandleFunc("/getCameras", func(w http.ResponseWriter, req *http.Request) {
-		
-		req.ParseForm()		// Parses the request body
+
+		req.ParseForm() // Parses the request body
 		id := req.Form.Get("id")
-		
 
 		cams := make([]models.Camera, 0)
-		if err!=nil {
+		if err != nil {
 			return
 		}
 
-		user_id, err:= strconv.Atoi(id)
+		user_id, err := strconv.Atoi(id)
 		if err == nil {
-			cams, err= db.GetCamsByUser(user_id)
+			cams, err = db.GetCamsByUser(user_id)
 		}
-		if err!=nil {
+		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		
 
 		data, _ := json.Marshal(cams)
-		
 
 		fmt.Fprintln(w, string(data))
-		
+
 		return
 	})
 
-
 	//get the next id for cams from an specific user
 	http.HandleFunc("/getNextCamIdByUser", func(w http.ResponseWriter, req *http.Request) {
-		
-		req.ParseForm()		// Parses the request body
+
+		req.ParseForm() // Parses the request body
 		id := req.Form.Get("id")
-		
-		if err!=nil {
+
+		if err != nil {
 			return
 		}
 
-		user_id, err:= strconv.Atoi(id)
+		user_id, err := strconv.Atoi(id)
 
-		var nextId int 
+		var nextId int
 		if err == nil {
-			nextId, err= db.GetNextCamIdByUser(user_id)
+			nextId, err = db.GetNextCamIdByUser(user_id)
 		}
-		if err!=nil {
+		if err != nil {
 			fmt.Println(err)
 			return
 		}
 		fmt.Fprintln(w, nextId)
-		
+
 		return
 	})
 
 	http.HandleFunc("/getTokenCamFromDB", func(w http.ResponseWriter, req *http.Request) {
-		
-		req.ParseForm()		// Parses the request body
+
+		req.ParseForm() // Parses the request body
 		id := req.Form.Get("id")
 		user := req.Form.Get("user")
 
-		if err!=nil {
+		if err != nil {
 			return
 		}
 
-		user_id, err:= strconv.Atoi(user)
-		cam_id, err:= strconv.Atoi(id)
+		user_id, err := strconv.Atoi(user)
+		cam_id, err := strconv.Atoi(id)
 
-		var token string 
+		var token string
 		if err == nil {
-			token= db.GetTokenCam(cam_id,user_id)
+			token = db.GetTokenCam(cam_id, user_id)
 		}
-		if err!=nil {
+		if err != nil {
 			fmt.Println(err)
 			return
 		}
 		fmt.Fprintln(w, token)
-		
+
 		return
 	})
-
 
 	// Serve the required pages
 	// DIY 'mux' to avoid additional dependencies
@@ -443,11 +426,11 @@ func serve(addr string) error {
 	})
 
 	// Start the server
-	if  addr != ":80" {
+	if addr != ":8080" {
 		ip := strings.Split(addr, ":")[0]
-		fmt.Printf(ip+" CONECTING 443")
-		go http.ListenAndServe( ip+":80", nil)
-		return http.ListenAndServeTLS( ip+":443", PUBLIC_KEY, PRIV_KEY, http.HandlerFunc(redirect443to80))
+		fmt.Printf(ip + " CONECTING 443")
+		go http.ListenAndServe(ip+":8080", nil)
+		return http.ListenAndServeTLS(ip+":443", PUBLIC_KEY, PRIV_KEY, http.HandlerFunc(redirect443to80))
 	}
 	return http.ListenAndServe(addr, nil)
 }
@@ -485,7 +468,3 @@ func getExamples() (*Examples, error) {
 
 	return &examples, nil
 }
-
-
-
-

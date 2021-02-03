@@ -17,7 +17,7 @@ cd webrtc/examples/ice-restart
 Execute `go run *.go`
 
 ### Open the Web UI
-Open [http://localhost:8080](http://localhost:8080). This will automatically start a PeerConnection. This page will now prints stats about the PeerConnection
+Open [http://8080](http://localhost:8080). This will automatically start a PeerConnection. This page will now prints stats about the PeerConnection
 and allow you to do an ICE Restart at anytime.
 
 * `ICE Restart` is the button that causes a new offer to be made wih `iceRestart: true`.

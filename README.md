@@ -31,7 +31,7 @@
 **Import new packages**
     Copy ../webrtcProject/examples/db and ../webrtcProject/examples/models in /usr/local/go/src folder.
 
-**Note:** This project use port 80 and 443
+**Note:** This project use port 8080 and 443
 
 
 ## Run project
@@ -54,13 +54,17 @@
 <HOST>: Reference your host
 <ADDRES>: Local listen address for stream. If not specify address, you listen stream on 127.0.0.200 by default.
 <PORT>: Local port for listen stream. If not specify port, use port 4000 by default.
+<IDCAMERA>: is the number in id_camera field in "Cameras" table. 
+<USER>: is the number in users_id field in "Cameras" table.
+
+Use <IDCAMERA> and <USER> to identify an specific camera.
 
 
 1. Go to url http://<HOST>/example/js/rtp-forwarder/
 2. Add and connect your IP-CAM
 3. For consume stream use this command:
     ```bash
-        curl -X GET http://<HOST>/checkstream | .<PATH_TO>/rtp-forwarder --address <ADDRESS> --port <PORT> --host <HOST>
+        curl -X POST -d "cam=<IDCAMERA>&user=<USER>" http://<HOST>/checkstream | .<PATH_TO>/rtp-forwarder --address <ADDRESS> --port <PORT> --host <HOST> --idCam <IDCAMERA> --idUser <USER>
     ```
 4. Go to the tmp folder and choose the generated .sdp file. Open it with a media player.
 

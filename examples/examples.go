@@ -124,21 +124,25 @@ func serve(addr string) error {
 	//Receiver token from consumer for connect to streamer
 	http.HandleFunc("/sendtokenconnect", func(w http.ResponseWriter, req *http.Request) {
 		// Parses the request body
+		fmt.Println("HOLA")
 		req.ParseForm()
 		token_connect := req.Form.Get("token")
 		id := req.Form.Get("id_camera")
+		user := req.Form.Get("id_user")
 		cam_id, err := strconv.Atoi(id)
+		user_id, err := strconv.Atoi(user)
 
 		if err == nil {
-			db.UpdateTokenCon(cam_id, token_connect)
+			db.UpdateTokenCon(cam_id, token_connect, user_id)
 		}
 
 		if token_connect != "" {
+			fmt.Printf(token_connect)
 			fmt.Fprintln(w, token_connect)
 			return
 		}
 
-		//fmt.Printf(token_connect)
+		fmt.Printf(" token_connect not found")
 		return
 	})
 
@@ -156,13 +160,15 @@ func serve(addr string) error {
 		req.ParseForm()
 		idCam := req.Form.Get("cam")
 		user := req.Form.Get("user")
-		fmt.Println(idCam)
-		fmt.Println(user)
 
+		user_id, err := strconv.Atoi(user)
+
+		cam_id, err := strconv.Atoi(idCam)
 		var token_stream string
 
 		if err == nil {
-			token_stream = db.GetTokenCam(4, 1)
+			token_stream = db.GetTokenCam(cam_id, user_id)
+
 		}
 
 		if token_stream != "" {
@@ -211,14 +217,20 @@ func serve(addr string) error {
 		req.ParseForm()
 		user := req.Form.Get("user")
 		loc := req.Form.Get("loc")
-		idCam := req.Form.Get("id_camera")
+		idCam := req.Form.Get("idcam")
 		url := req.Form.Get("url")
+		active := req.Form.Get("active")
+		tokcam := req.Form.Get("tokcam")
+		tokcon := req.Form.Get("tokcon")
 
+		act, err := strconv.ParseBool(active)
 		//fmt.Println(loc);
 		user_id, err := strconv.Atoi(user)
 		cam_id, err := strconv.Atoi(idCam)
 		if err == nil {
-			db.UpdateCam(cam_id, user_id, loc, url)
+			db.UpdateCam(cam_id, user_id, loc, url, act, tokcam, tokcon)
+		} else {
+			fmt.Println(err)
 		}
 		return
 
@@ -256,6 +268,8 @@ func serve(addr string) error {
 		act, err := strconv.ParseBool(active)
 		if err == nil {
 			db.UpdateActiveCam(act, cam_id)
+		} else {
+			fmt.Println(err)
 		}
 		return
 
@@ -272,6 +286,8 @@ func serve(addr string) error {
 
 		if err == nil {
 			db.UpdateTokenCam(cam_id, user_id, token)
+		} else {
+			fmt.Println(err)
 		}
 		return
 

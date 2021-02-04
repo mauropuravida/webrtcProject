@@ -24,12 +24,12 @@ type udpConn struct {
 }
 
 var (
-	host  = ""
-	ipCam = ""
+	host = ""
 )
 
 //Only work in linux
 func createSdp(addr string, videoPort string) {
+	fmt.Println("creating sdp file")
 	data := []byte("v=0\no=- 0 0 IN IP4 " + addr + "\ns=WebRTC " + addr + ":" + videoPort + "\nc=IN IP4 " + addr + "\nt=0 0\nm=video " + videoPort + " RTP/AVP 96\na=rtpmap:96 VP8/90000")
 	prefix := addr + "_" + videoPort + "-*.sdp"
 	tmpFile, err := ioutil.TempFile(os.TempDir(), prefix)
@@ -44,7 +44,7 @@ func main() {
 	idUser := flag.String("idUser", " ", "Camera identification.")
 	addr := flag.String("address", "127.0.0.200", "Address to host the HTTP server on.")
 	portt := flag.Int("port", 4000, "Address to host the HTTP server on.")
-	hostt := flag.String("host", "http://localhost", "")
+	hostt := flag.String("host", "http://localhost:8080", "")
 	flag.Parse()
 
 	host = *hostt
@@ -211,13 +211,14 @@ func main() {
 	<-gatherComplete
 
 	// Output the answer in base64 so we can paste it in browser
+
 	fmt.Println(signal.Encode(*peerConnection.LocalDescription()))
 
 	endpoint := host + "/sendtokenconnect"
 	data := url.Values{}
 	data.Set("token", signal.Encode(*peerConnection.LocalDescription()))
-	data.Set("id_camera", idCam)
-	data.Set("id_user", idUser)
+	data.Set("id_camera", *idCam)
+	data.Set("id_user", *idUser)
 
 	client := &http.Client{}
 	r, err := http.NewRequest("POST", endpoint, strings.NewReader(data.Encode())) // URL-encoded payload

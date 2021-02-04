@@ -93,9 +93,9 @@ function addCamera(url, description, active, camId) {
 document.getElementById("save" + camId).addEventListener('click', function () {
     let newURL = document.getElementById("url" + camId).value;
     let newDesc = document.getElementById("description" + camId).value;
-    
-    deleteCam(privateCamId);
-    insertCam(newURL, newDesc, active);
+    updateCam(privateCamId,newURL, newDesc, active);
+    //deleteCam(privateCamId);
+    //insertCam(newURL, newDesc, active);
 
 });
 
@@ -136,6 +136,23 @@ function insertCam(newURL, newDesc,status) {
     };
     xhr1.open("POST", host + "/addcamera");
     data = "user=" + currentUser +"&idcam="+ numberOfCam +"&loc=" + newDesc + "&url=" + newURL;
+    xhr1.setRequestHeader("cache-control", "no-cache");
+    xhr1.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    xhr1.send(data);
+    numberOfCam++;
+}
+
+function updateCam(numberOfCam, newURL, newDesc,status) {
+    
+    var xhr1 = new XMLHttpRequest();
+    xhr1.onload = function () {
+        console.log(this.readyState);
+        if (this.readyState === 4) {
+            addCamera(newURL, newDesc, status, numberOfCam);
+        }
+    };
+    xhr1.open("POST", host + "/updatecamera");
+    data = "user=" + currentUser +"&idcam="+ numberOfCam +"&loc=" + newDesc + "&url=" + newURL+"&active=" + active;
     xhr1.setRequestHeader("cache-control", "no-cache");
     xhr1.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
     xhr1.send(data);
@@ -297,6 +314,7 @@ function listenPc(id){
     if (event.candidate === null) {    
         //var localSesion = btoa(JSON.stringify(pc.localDescription));
         var localSesion;
+        console.log("Antes get token cam from db");
         getTokenCamFromDB(id, pc, localSesion);
 
       var data = "user="+currentUser+"&id_camera="+id+"&token="+localSesion;
@@ -389,6 +407,7 @@ function getTokenCamFromDB(id, pc, localSesion){
     xhr.onload = function () {
         console.log(this.responseText);
         if (this.readyState === 4) {
+            console.log("LENGTH DEL TOKEN: "+this.responseText.length);
             if(this.responseText.length<=1){
                 localSesion = btoa(JSON.stringify(pc.localDescription));
                 saveTokenCam(id,localSesion);

@@ -29,9 +29,10 @@ var (
 
 //Only work in linux
 func createSdp(addr string, videoPort string) {
-	fmt.Println("creating sdp file")
 	data := []byte("v=0\no=- 0 0 IN IP4 " + addr + "\ns=WebRTC " + addr + ":" + videoPort + "\nc=IN IP4 " + addr + "\nt=0 0\nm=video " + videoPort + " RTP/AVP 96\na=rtpmap:96 VP8/90000")
 	prefix := addr + "_" + videoPort + "-*.sdp"
+	fmt.Println("DIRECCION: ")
+	fmt.Println(os.TempDir())
 	tmpFile, err := ioutil.TempFile(os.TempDir(), prefix)
 	if err != nil {
 		fmt.Println("Cannot create temporary file", err)
@@ -44,7 +45,7 @@ func main() {
 	idUser := flag.String("idUser", " ", "Camera identification.")
 	addr := flag.String("address", "127.0.0.200", "Address to host the HTTP server on.")
 	portt := flag.Int("port", 4000, "Address to host the HTTP server on.")
-	hostt := flag.String("host", "http://localhost:8080", "")
+	hostt := flag.String("host", "http://localhost:80", "")
 	flag.Parse()
 
 	host = *hostt

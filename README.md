@@ -31,7 +31,7 @@
 **Import new packages**
     Copy ../webrtcProject/examples/db and ../webrtcProject/examples/models in /usr/local/go/src folder.
 
-**Note:** This project use port 8080 and 443
+**Note:** This project use port 80 and 443 and was developed for Windows and Linux. Probably will need changes for MacOs. All commands for Linux terminal. 
 
 
 ## Run project

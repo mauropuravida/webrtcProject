@@ -67,7 +67,7 @@ func redirect443to80(w http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
-	addr := flag.String("address", ":8080", "Address to host the HTTP server on.")
+	addr := flag.String("address", ":80", "Address to host the HTTP server on.")
 	flag.Parse()
 
 	log.Println("Listening on", *addr)
@@ -442,10 +442,10 @@ func serve(addr string) error {
 	})
 
 	// Start the server
-	if addr != ":8080" {
+	if addr != ":80" {
 		ip := strings.Split(addr, ":")[0]
 		fmt.Printf(ip + " CONECTING 443")
-		go http.ListenAndServe(ip+":8080", nil)
+		go http.ListenAndServe(ip+":80", nil)
 		return http.ListenAndServeTLS(ip+":443", PUBLIC_KEY, PRIV_KEY, http.HandlerFunc(redirect443to80))
 	}
 	return http.ListenAndServe(addr, nil)

@@ -1,6 +1,6 @@
 
 /* eslint-env browser */
-var host = "http://localhost:8080"
+var host = "http://localhost:80"
 //var host = "http://159.65.97.50"
 
 var pcMap = new Map()
@@ -93,9 +93,11 @@ function addCamera(url, description, active, camId) {
 document.getElementById("save" + camId).addEventListener('click', function () {
     let newURL = document.getElementById("url" + camId).value;
     let newDesc = document.getElementById("description" + camId).value;
-    updateCam(privateCamId,newURL, newDesc, active);
-    //deleteCam(privateCamId);
-    //insertCam(newURL, newDesc, active);
+
+    //The problem to use update method is that the insert is done when you press the first time "Guardar", to use update is necessary change the logic
+    //updateCam(privateCamId,newURL, newDesc, active);
+    deleteCam(privateCamId);
+    insertCam(newURL, newDesc, active);
 
 });
 
@@ -152,7 +154,7 @@ function updateCam(numberOfCam, newURL, newDesc,status) {
         }
     };
     xhr1.open("POST", host + "/updatecamera");
-    data = "user=" + currentUser +"&idcam="+ numberOfCam +"&loc=" + newDesc + "&url=" + newURL+"&active=" + active;
+    data = "user=" + currentUser +"&idcam="+ numberOfCam +"&loc=" + newDesc + "&url=" + newURL+"&active=" + status;
     xhr1.setRequestHeader("cache-control", "no-cache");
     xhr1.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
     xhr1.send(data);
@@ -313,8 +315,7 @@ function listenPc(id){
   pc.onicecandidate = function(event) {
     if (event.candidate === null) {    
         //var localSesion = btoa(JSON.stringify(pc.localDescription));
-        var localSesion;
-        console.log("Antes get token cam from db");
+        var localSesion;  
         getTokenCamFromDB(id, pc, localSesion);
 
       var data = "user="+currentUser+"&id_camera="+id+"&token="+localSesion;
@@ -407,8 +408,7 @@ function getTokenCamFromDB(id, pc, localSesion){
     xhr.onload = function () {
         console.log(this.responseText);
         if (this.readyState === 4) {
-            console.log("LENGTH DEL TOKEN: "+this.responseText.length);
-            if(this.responseText.length<=1){
+            if(this.responseText.length<100){
                 localSesion = btoa(JSON.stringify(pc.localDescription));
                 saveTokenCam(id,localSesion);
             }

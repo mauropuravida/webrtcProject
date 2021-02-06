@@ -35,7 +35,7 @@ func InsertCam(user int, loc string, url string, idcam int) error {
 }
 
 func UpdateCam(idCam int, user int, loc string, url string, active bool, tokencam string, tokencon string) (int64, error) {
-	query := "UPDATE Cameras SET users_id=?, loc=?, url=?, active=?, token_session_camera=?, token_session_connection=? WHERE id_camera=? and users_id=?"
+	query := "UPDATE Cameras SET users_id=?, loc=?, url=?, active=?, token_session_camera=?, token_session_consumer=? WHERE id_camera=? and users_id=?"
 	db := get()
 
 	stmt, err := db.Prepare(query)
@@ -83,7 +83,7 @@ func UpdateActiveCam(act bool, id int) (int64, error) {
 }
 
 func UpdateTokenCon(idCam int, token_con string, user int) int64 {
-	query := "UPDATE Cameras SET token_session_connection=? WHERE id_camera=? and users_id"
+	query := "UPDATE Cameras SET token_session_consumer=? WHERE id_camera=? and users_id=?"
 	db := get()
 
 	stmt, err := db.Prepare(query)

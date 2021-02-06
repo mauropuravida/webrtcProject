@@ -124,7 +124,6 @@ func serve(addr string) error {
 	//Receiver token from consumer for connect to streamer
 	http.HandleFunc("/sendtokenconnect", func(w http.ResponseWriter, req *http.Request) {
 		// Parses the request body
-		fmt.Println("HOLA")
 		req.ParseForm()
 		token_connect := req.Form.Get("token")
 		id := req.Form.Get("id_camera")
@@ -164,6 +163,7 @@ func serve(addr string) error {
 		user_id, err := strconv.Atoi(user)
 
 		cam_id, err := strconv.Atoi(idCam)
+
 		var token_stream string
 
 		if err == nil {

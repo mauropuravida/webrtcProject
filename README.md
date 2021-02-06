@@ -21,6 +21,10 @@
 
 - Create the schema using the script in examples/db/dbCam.sql. Copy this file content inside the container.
 
+- Insert an user:
+    INSERT INTO Users (name, surname, age, email, created, password) VALUES ("Maria", "Perez", 30, "maria@perez.com", CURDATE(), "1234");
+
+- Now, you can add cameras from web if you are previously logged with id from your user.
 
 
 **Import env vars**
@@ -31,7 +35,7 @@
 **Import new packages**
     Copy ../webrtcProject/examples/db and ../webrtcProject/examples/models in /usr/local/go/src folder.
 
-**Note:** This project use port 80 and 443 and was developed for Windows and Linux. Probably will need changes for MacOs. All commands for Linux terminal. 
+**Note:** This project use port 80 and 443 and was developed for Linux. 
 
 
 ## Run project
@@ -64,7 +68,7 @@ Use <IDCAMERA> and <USER> to identify an specific camera.
 2. Add and connect your IP-CAM
 3. For consume stream use this command:
     ```bash
-        curl -X POST -d "cam=<IDCAMERA>&user=<USER>" http://<HOST>/checkstream | .<PATH_TO>/rtp-forwarder --address <ADDRESS> --port <PORT> --host <HOST> --idCam <IDCAMERA> --idUser <USER>
+        curl -X POST -d "cam=<IDCAMERA>&user=<USER>" http://<HOST>/checkstream | .<PATH_TO>/rtp-forwarder --address <ADDRESS> --port <PORT> --host <HOST> --idCam "<IDCAMERA>" --idUser "<USER>"
     ```
 4. Go to the tmp folder and choose the generated .sdp file. Open it with a media player.
 

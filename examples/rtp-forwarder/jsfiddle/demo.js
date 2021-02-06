@@ -316,8 +316,8 @@ function listenPc(id){
     if (event.candidate === null) {    
         //var localSesion = btoa(JSON.stringify(pc.localDescription));
         var localSesion;  
-        getTokenCamFromDB(id, pc, localSesion);
-
+        localSesion = btoa(JSON.stringify(pc.localDescription));
+        saveTokenCam(id,localSesion);
       var data = "user="+currentUser+"&id_camera="+id+"&token="+localSesion;
       console.log(data);
       getToken(data, id);
@@ -400,31 +400,6 @@ function getNextCamIdByUser(currentUser){
     xhr.send(data);
 
     
-}
-
-function getTokenCamFromDB(id, pc, localSesion){
-    var xhr = new XMLHttpRequest();
-
-    xhr.onload = function () {
-        console.log(this.responseText);
-        if (this.readyState === 4) {
-            if(this.responseText.length<100){
-                localSesion = btoa(JSON.stringify(pc.localDescription));
-                saveTokenCam(id,localSesion);
-            }
-            else{
-                localSesion = this.responseText;
-
-            } 
-        }
-    };
-    data = 'id='+ id + '&user='+currentUser;
-    xhr.withCredentials = true;
-    xhr.open("POST", host + "/getTokenCamFromDB");
-    xhr.setRequestHeader("cache-control", "no-cache");
-    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-    xhr.setRequestHeader('token', 'eltoken');
-    xhr.send(data);
 }
 
 function saveTokenCam(id, localSesion){

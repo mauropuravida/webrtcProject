@@ -31,7 +31,6 @@ var (
 func createSdp(addr string, videoPort string) {
 	data := []byte("v=0\no=- 0 0 IN IP4 " + addr + "\ns=WebRTC " + addr + ":" + videoPort + "\nc=IN IP4 " + addr + "\nt=0 0\nm=video " + videoPort + " RTP/AVP 96\na=rtpmap:96 VP8/90000")
 	prefix := addr + "_" + videoPort + "-*.sdp"
-	fmt.Println("DIRECCION: ")
 	fmt.Println(os.TempDir())
 	tmpFile, err := ioutil.TempFile(os.TempDir(), prefix)
 	if err != nil {
@@ -59,6 +58,7 @@ func main() {
 	}
 
 	createSdp(*addr, strconv.Itoa(*portt))
+
 	// Create context
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -182,7 +182,6 @@ func main() {
 			cancel()
 		}
 	})
-
 	// Wait for the offer to be pasted
 	offer := webrtc.SessionDescription{}
 	signal.Decode(signal.MustReadStdin(), &offer)
@@ -197,7 +196,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
 	// Create channel that is blocked until ICE Gathering is complete
 	gatherComplete := webrtc.GatheringCompletePromise(peerConnection)
 
@@ -205,7 +203,6 @@ func main() {
 	if err = peerConnection.SetLocalDescription(answer); err != nil {
 		panic(err)
 	}
-
 	// Block until ICE Gathering is complete, disabling trickle ICE
 	// we do this because we only can exchange one signaling message
 	// in a production application you should exchange ICE Candidates via OnICECandidate
@@ -228,17 +225,20 @@ func main() {
 	r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
 
 	if err != nil {
+		fmt.Println(err)
 		panic(err)
 	}
 
 	res, err := client.Do(r)
 	if err != nil {
+		fmt.Println(err)
 		panic(err)
 	}
 
 	defer res.Body.Close()
 
 	if err != nil {
+		fmt.Println(err)
 		panic(err)
 	}
 

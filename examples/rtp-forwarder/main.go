@@ -2,19 +2,20 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
+	"io/ioutil"
 	"net"
+	"net/http"
+	"net/url"
+	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/pion/rtcp"
 	"github.com/pion/webrtc/v3"
 	"github.com/pion/webrtc/v3/examples/internal/signal"
-	"io/ioutil"
-	"flag"
-	"strconv"
-	"net/http"
-	"net/url"
-	"strings"
 )
 
 type udpConn struct {
@@ -22,25 +23,47 @@ type udpConn struct {
 	port int
 }
 
+var (
+	host = ""
+	token = ""
+)
+
 //Only work in linux
-func createSdp(addr string, audioPort string, videoPort string){
-	data := []byte("v=0\no=- 0 0 IN IP4 "+addr+"\ns=WebRTC "+addr+":"+audioPort+"\nc=IN IP4 "+addr+"\nt=0 0\nm=audio "+audioPort+" RTP/AVP 111\na=rtpmap:111 OPUS/48000/2\nm=video "+videoPort+" RTP/AVP 96\na=rtpmap:96 VP8/90000")
-    ioutil.WriteFile("/tmp/"+addr+"_"+audioPort+".sdp", data, 0644)
+func createSdp(addr string, videoPort string) {
+	data := []byte("v=0\no=- 0 0 IN IP4 " + addr + "\ns=WebRTC " + addr + ":" + videoPort + "\nc=IN IP4 " + addr + "\nt=0 0\nm=video " + videoPort + " RTP/AVP 96\na=rtpmap:96 VP8/90000")
+	prefix := addr + "_" + videoPort + "-*.sdp"
+	fmt.Println(os.TempDir())
+	tmpFile, err := ioutil.TempFile(os.TempDir(), prefix)
+	if err != nil {
+		fmt.Println("Cannot create temporary file", err)
+	}
+	tmpFile.Write(data)
 }
 
 func main() {
+	idCam := flag.String("idCam", " ", "Camera identification.")
+	idUser := flag.String("idUser", " ", "Camera identification.")
+	tokenrece := flag.String("token", " ", "Token.")
 	addr := flag.String("address", "127.0.0.200", "Address to host the HTTP server on.")
 	portt := flag.Int("port", 4000, "Address to host the HTTP server on.")
+	hostt := flag.String("host", "http://localhost:80", "")
 	flag.Parse()
 
+	host = *hostt
+	token = *tokenrece
+
+	fmt.Printf("TOKEN: %s \n", *tokenrece)
+
+	fmt.Printf("HOST : %s \n", host)
 	fmt.Printf("Listening address %s \n", *addr)
 
-	if *addr == ""{
+	if *addr == "" {
 		fmt.Printf("Empty address %s \n", *addr)
 		return
 	}
 
-	createSdp(*addr, strconv.Itoa(*portt), strconv.Itoa(*portt+2))
+	createSdp(*addr, strconv.Itoa(*portt))
+
 	// Create context
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -87,8 +110,7 @@ func main() {
 
 	// Prepare udp conns
 	udpConns := map[string]*udpConn{
-		"audio": {port: *portt},
-		"video": {port: *portt+2},
+		"video": {port: *portt},
 	}
 	for _, c := range udpConns {
 		// Create remote addr
@@ -165,10 +187,9 @@ func main() {
 			cancel()
 		}
 	})
-
 	// Wait for the offer to be pasted
 	offer := webrtc.SessionDescription{}
-	signal.Decode(signal.MustReadStdin(), &offer)
+	signal.Decode(token, &offer)
 
 	// Set the remote SessionDescription
 	if err = peerConnection.SetRemoteDescription(offer); err != nil {
@@ -180,7 +201,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
 	// Create channel that is blocked until ICE Gathering is complete
 	gatherComplete := webrtc.GatheringCompletePromise(peerConnection)
 
@@ -188,41 +208,44 @@ func main() {
 	if err = peerConnection.SetLocalDescription(answer); err != nil {
 		panic(err)
 	}
-
 	// Block until ICE Gathering is complete, disabling trickle ICE
 	// we do this because we only can exchange one signaling message
 	// in a production application you should exchange ICE Candidates via OnICECandidate
 	<-gatherComplete
 
 	// Output the answer in base64 so we can paste it in browser
+
 	fmt.Println(signal.Encode(*peerConnection.LocalDescription()))
 
+	endpoint := host + "/sendtokenconnect"
+	data := url.Values{}
+	data.Set("token", signal.Encode(*peerConnection.LocalDescription()))
+	data.Set("id_camera", *idCam)
+	data.Set("id_user", *idUser)
 
-    endpoint := "http://127.0.0.1/sendtokenconnect"
-    data := url.Values{}
-    data.Set("token", signal.Encode(*peerConnection.LocalDescription()))
+	client := &http.Client{}
+	r, err := http.NewRequest("POST", endpoint, strings.NewReader(data.Encode())) // URL-encoded payload
 
-    client := &http.Client{}
-    r, err := http.NewRequest("POST", endpoint, strings.NewReader(data.Encode())) // URL-encoded payload
+	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
 
-    r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-    r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
+	if err != nil {
+		fmt.Println(err)
+		panic(err)
+	}
 
-    if err != nil {
-        panic(err)
-    }
+	res, err := client.Do(r)
+	if err != nil {
+		fmt.Println(err)
+		panic(err)
+	}
 
-    res, err := client.Do(r)
-    if err != nil {
-        panic(err)
-    }
-    //fmt.Println(res.Status)
-    defer res.Body.Close()
-    //body, err := ioutil.ReadAll(res.Body)
-    if err != nil {
-        panic(err)
-    }
-    //fmt.Println(string(body))
+	defer res.Body.Close()
+
+	if err != nil {
+		fmt.Println(err)
+		panic(err)
+	}
 
 	// Wait for context to be done
 	<-ctx.Done()

@@ -1,26 +1,19 @@
 <h2>CAMARAS</h2>
+<br>
 
+<label><b>User id</b></label>
+<input type='text' id='user-id' />
+<input id='btn-login' type='button' value='Login' onclick="login()" />
+<br><br>
 
 <table>
-  <tr>
-    <th>URL</th>
-    <th>Descripcion</th>
-    <th>Stream</th>
-    <th></th>
-  </tr>
-  <tr>
-    <td><input type="text" name="url" id="url" value="http://192.168.0.233:4747/video" /></td>
-    <td><input type="text" name="description" id="description"/></td>
-    <td>
-      <!--<video id="stream" width="160" height="120" class="video-stream" x-webkit-airplay="allow" src="http://192.168.0.233:4747/video">
-    	</video> 
-      <img width="160" height="120" id="stream3" > -->
-      <canvas width="160" height="120" id="myCanvas" autoplay></canvas>
-    </td>
-    <td>
-    	<input class='mybutton' type='button' value='Conectar' onclick="connectStream()" />
-    	<input class='mybutton' type='button' value='Eliminar' onclick="deleteCam()"/>
-    </td>
-  </tr>
+    <thead>
+        <th class="thhead">URL</th>
+        <th class="thhead">Descripcion</th>
+        <th class="stream">Stream</th>
+        <th class="addcamera"><input id='addCamera' type='button' value='Agregar Camara' onclick="addCamera('','',0,false)" /></th>
+    </thead>
+    <tbody id='cameras'>
+    </tbody>
 </table>
 

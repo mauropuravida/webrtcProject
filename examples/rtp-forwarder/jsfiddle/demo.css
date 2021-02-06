@@ -1,6 +1,6 @@
 textarea {
-    width: 500px;
-    min-height: 75px;
+  width: 500px;
+  min-height: 75px;
 }
 
 table {
@@ -17,4 +17,19 @@ td, th {
 
 tr:nth-child(even) {
   background-color: #dddddd;
+}
+
+th.thhead {
+  width: 50%;
+}
+th.addcamera {
+  min-width: 132px;
+  width: 132px;
+}
+th.stream {
+  min-width: 197px;
+  width: 197px;
+}
+td input {
+  width: 100%;
 }

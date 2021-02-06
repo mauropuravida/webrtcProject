@@ -11,7 +11,7 @@
 bin/
 vendor/
 node_modules/
-
+.vs/
 ### Files ###
 #############
 *.ivf
@@ -22,3 +22,5 @@ cover.out
 *.wasm
 examples/sfu-ws/cert.pem
 examples/sfu-ws/key.pem
+
+examples/rtp-forwarder/rtp-forwarder

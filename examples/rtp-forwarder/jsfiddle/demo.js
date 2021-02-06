@@ -317,7 +317,6 @@ function listenPc(id){
         //var localSesion = btoa(JSON.stringify(pc.localDescription));
         var localSesion;  
         localSesion = btoa(JSON.stringify(pc.localDescription));
-        saveTokenCam(id,localSesion);
       var data = "user="+currentUser+"&id_camera="+id+"&token="+localSesion;
       console.log(data);
       getToken(data, id);
@@ -401,18 +400,6 @@ function getNextCamIdByUser(currentUser){
 
     
 }
-
-function saveTokenCam(id, localSesion){
-    var xhr = new XMLHttpRequest();
-    data = 'id='+ id + '&user='+currentUser+"&token="+localSesion;
-    xhr.withCredentials = true;
-    xhr.open("POST", host + "/saveTokenCam");
-    xhr.setRequestHeader("cache-control", "no-cache");
-    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-    xhr.setRequestHeader('token', 'eltoken');
-    xhr.send(data);
-}
-
 
 window.startSession = function(id, remoteSesion) {
   try {

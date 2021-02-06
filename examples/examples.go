@@ -92,14 +92,21 @@ func serve(addr string) error {
 		// Parses the request body
 		req.ParseForm()
 
+		id_cam := req.Form.Get("id")
+		user := req.Form.Get("user")
+		token := req.Form.Get("token")
+		cam_id, err := strconv.Atoi(id_cam)
+		user_id, err := strconv.Atoi(user)
+
 		//Reset vars connection for test
 		token_stream = ""
 		token_connect = ""
 
-		//user := req.Form.Get("user")
-		//id_camera := req.Form.Get("id_camera")
-		token := req.Form.Get("token")
-		//TODO save token in database
+		if err == nil {
+			db.UpdateTokenCam(cam_id, user_id, token)
+		} else {
+			fmt.Println(err)
+		}
 
 		if token_stream == "" {
 			token_stream = token
@@ -268,24 +275,6 @@ func serve(addr string) error {
 		act, err := strconv.ParseBool(active)
 		if err == nil {
 			db.UpdateActiveCam(act, cam_id)
-		} else {
-			fmt.Println(err)
-		}
-		return
-
-	})
-
-	http.HandleFunc("/saveTokenCam", func(w http.ResponseWriter, req *http.Request) {
-		// Parses the request body
-		req.ParseForm()
-		id_cam := req.Form.Get("id")
-		user := req.Form.Get("user")
-		token := req.Form.Get("token")
-		cam_id, err := strconv.Atoi(id_cam)
-		user_id, err := strconv.Atoi(user)
-
-		if err == nil {
-			db.UpdateTokenCam(cam_id, user_id, token)
 		} else {
 			fmt.Println(err)
 		}

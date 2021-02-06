@@ -196,6 +196,37 @@ func GetTokenCam(idCam int, idUser int) string {
 	return row.T_s_cam
 }
 
+func GetTokenCon(idCam int, idUser int) string {
+	query := "SELECT * FROM Cameras WHERE id_camera=? AND users_id=?"
+	db := get()
+	stmt, err := db.Prepare(query)
+
+	if err != nil {
+		fmt.Println(err)
+		return ""
+	}
+
+	defer stmt.Close()
+	result, err := stmt.Query(idCam, idUser)
+
+	if err != nil {
+		fmt.Println(err)
+		return ""
+	}
+	var row m.Camera
+	var date string
+
+	for result.Next() {
+		err := result.Scan(&row.ID, &row.Active, &date, &row.Loc, &row.Url, &row.T_s_cam, &row.T_s_con, &row.Id_cam, &row.User_id)
+		if err != nil {
+			fmt.Println(err)
+			return ""
+		}
+	}
+	defer db.Close()
+	fmt.Println(row.T_s_con)
+	return row.T_s_con
+}
 func DeleteCam(idCam int, idUser int) (sql.Result, error) {
 	query := "DELETE FROM Cameras WHERE id_camera=? and users_id=?"
 

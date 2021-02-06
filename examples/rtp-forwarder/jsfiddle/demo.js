@@ -331,7 +331,7 @@ function getToken(data, id){
   console.log(this.readyState);
     if (this.readyState === 4) {
       //remoteSesion = this.responseText
-      setTimeout(window.startSession(id, this.responseText), 3000);
+      setTimeout(startSession(id, this.responseText), 3000);
       console.log(this.responseText);
     }
   };
@@ -399,7 +399,7 @@ function getNextCamIdByUser(currentUser){
     
 }
 
-window.startSession = function(id, remoteSesion) {
+function startSession(id, remoteSesion) {
   try {
     pcMap.get(id).setRemoteDescription(new RTCSessionDescription(JSON.parse(atob(remoteSesion))))
   } catch (e) {

@@ -28,8 +28,6 @@ type Examples []*Example
 var (
 	errListExamples  = errors.New("failed to list examples (please run in the examples folder)")
 	errParseExamples = errors.New("failed to parse examples")
-	token_stream     = ""
-	token_connect    = ""
 )
 
 // Example represents an example loaded from examples.json.
@@ -95,31 +93,26 @@ func serve(addr string) error {
 		id_cam := req.Form.Get("id")
 		user := req.Form.Get("user")
 		token := req.Form.Get("token")
-		cam_id, err := strconv.Atoi(id_cam)
-		user_id, err := strconv.Atoi(user)
+		cam_id, _ := strconv.Atoi(id_cam)
+		user_id, _ := strconv.Atoi(user)
 
-		//Reset vars connection for test
-		token_stream = ""
-		token_connect = ""
 
-		if err == nil {
+		tokenCam := db.GetTokenCam(cam_id, user_id)
+
+		if tokenCam != token {
+			//load token cam
 			db.UpdateTokenCam(cam_id, user_id, token)
-		} else {
-			fmt.Println(err)
-		}
 
-		if token_stream == "" {
-			token_stream = token
+			//Reset token response to avoid problems
+			db.UpdateTokenCon(cam_id, "", user_id)
 		}
 
 		// await for token_connect
 		endTime := time.Now().Add(time.Second * 61)
 		for time.Now().Before(endTime) { //listening response
-			//consultar que la base no devuelva vacio
+			token_connect := db.GetTokenCon(cam_id, user_id)
 			if token_connect != "" {
-				tokenResponse := token_connect
-				token_connect = ""
-				fmt.Fprintln(w, tokenResponse)
+				fmt.Fprintln(w, token_connect)
 				return
 			}
 		}
@@ -149,15 +142,6 @@ func serve(addr string) error {
 		}
 
 		fmt.Printf(" token_connect not found")
-		return
-	})
-
-	//Delete vars only for *testing*
-	http.HandleFunc("/reset", func(w http.ResponseWriter, req *http.Request) {
-		token_stream = ""
-		token_connect = ""
-
-		fmt.Fprintln(w, "reset")
 		return
 	})
 

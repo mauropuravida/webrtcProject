@@ -68,7 +68,7 @@ Use <IDCAMERA> and <USER> to identify an specific camera.
 2. Add and connect your IP-CAM
 3. For consume stream use this command:
     ```bash
-        curl -X POST -d "cam=<IDCAMERA>&user=<USER>" http://<HOST>/checkstream | .<PATH_TO>/rtp-forwarder --address <ADDRESS> --port <PORT> --host <HOST> --idCam "<IDCAMERA>" --idUser "<USER>"
+        .<PATH_TO>/rtp-forwarder --address <ADDRESS> --port <PORT> --host <HOST> --idCam "<IDCAMERA>" --idUser "<USER>" --token $(curl -X POST -d "cam=<IDCAMERA>&user=<USER>" http://<HOST>/checkstream)
     ```
 4. Go to the tmp folder and choose the generated .sdp file. Open it with a media player.
 

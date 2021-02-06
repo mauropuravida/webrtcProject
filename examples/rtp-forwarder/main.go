@@ -25,6 +25,7 @@ type udpConn struct {
 
 var (
 	host = ""
+	token = ""
 )
 
 //Only work in linux
@@ -42,12 +43,16 @@ func createSdp(addr string, videoPort string) {
 func main() {
 	idCam := flag.String("idCam", " ", "Camera identification.")
 	idUser := flag.String("idUser", " ", "Camera identification.")
+	tokenrece := flag.String("token", " ", "Token.")
 	addr := flag.String("address", "127.0.0.200", "Address to host the HTTP server on.")
 	portt := flag.Int("port", 4000, "Address to host the HTTP server on.")
 	hostt := flag.String("host", "http://localhost:80", "")
 	flag.Parse()
 
 	host = *hostt
+	token = *tokenrece
+
+	fmt.Printf("TOKEN: %s \n", *tokenrece)
 
 	fmt.Printf("HOST : %s \n", host)
 	fmt.Printf("Listening address %s \n", *addr)
@@ -184,7 +189,7 @@ func main() {
 	})
 	// Wait for the offer to be pasted
 	offer := webrtc.SessionDescription{}
-	signal.Decode(signal.MustReadStdin(), &offer)
+	signal.Decode(token, &offer)
 
 	// Set the remote SessionDescription
 	if err = peerConnection.SetRemoteDescription(offer); err != nil {

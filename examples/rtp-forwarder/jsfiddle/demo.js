@@ -313,11 +313,9 @@ function listenPc(id){
   var pc = pcMap.get(id)
   pc.oniceconnectionstatechange = function(e) { console.log(pc.iceConnectionState) }
   pc.onicecandidate = function(event) {
-    if (event.candidate === null) {    
-        //var localSesion = btoa(JSON.stringify(pc.localDescription));
-        var localSesion;  
-        localSesion = btoa(JSON.stringify(pc.localDescription));
-      var data = "user="+currentUser+"&id_camera="+id+"&token="+localSesion;
+    if (event.candidate === null) {  
+        var localSesion = btoa(JSON.stringify(pc.localDescription));
+      var data = "user="+currentUser+"&id="+id+"&token="+localSesion;
       console.log(data);
       getToken(data, id);
     }
@@ -339,7 +337,7 @@ function getToken(data, id){
   };
   xhr.ontimeout = function(e){
     console.log("time lost");
-    getToken("");
+    getToken(data, id);
   }
   // await one minute for response   
     //primero

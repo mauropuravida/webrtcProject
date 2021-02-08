@@ -30,7 +30,7 @@ func InsertCam(user int, loc string, url string, idcam int) error {
 	if err != nil {
 		return err
 	}
-
+	db.Close()
 	return nil
 }
 
@@ -55,6 +55,7 @@ func UpdateCam(idCam int, user int, loc string, url string, active bool, tokenca
 	}
 
 	defer stmt.Close()
+	db.Close()
 	return id, nil
 }
 
@@ -79,6 +80,7 @@ func UpdateActiveCam(act bool, id int) (int64, error) {
 	}
 
 	defer stmt.Close()
+	db.Close()
 	return id_cam, nil
 }
 
@@ -106,6 +108,7 @@ func UpdateTokenCon(idCam int, token_con string, user int) int64 {
 	}
 
 	defer stmt.Close()
+	db.Close()
 	return id
 }
 func UpdateTokenCam(idCam int, user_id int, token_cam string) int64 {
@@ -131,6 +134,7 @@ func UpdateTokenCam(idCam int, user_id int, token_cam string) int64 {
 		return 0
 	}
 
+	db.Close()
 	defer stmt.Close()
 	return id
 }
